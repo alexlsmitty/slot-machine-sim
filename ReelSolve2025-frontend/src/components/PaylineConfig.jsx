@@ -8,7 +8,6 @@ import {
 } from '@mui/material';
 import { Delete, Edit, Add, ArrowForward } from '@mui/icons-material';
 
-// Sample initial paylines - replace with data from your backend
 const initialPaylines = [
   { id: 1, name: "Horizontal Center", pattern: [1, 1, 1, 1, 1], active: true, multiplier: 1 },
   { id: 2, name: "Top Horizontal", pattern: [0, 0, 0, 0, 0], active: true, multiplier: 1 },
@@ -24,6 +23,17 @@ const PaylineConfiguration = () => {
   const [reelCount, setReelCount] = useState(5);
   const [rowCount, setRowCount] = useState(3);
   const [evaluationType, setEvaluationType] = useState('leftToRight');
+
+  // On mount, try to load saved payline configuration via IPC
+  useEffect(() => {
+    if (window.api && window.api.getPaylineConfig) {
+      window.api.getPaylineConfig().then(savedPaylines => {
+        if (savedPaylines && savedPaylines.length > 0) {
+          setPaylines(savedPaylines);
+        }
+      });
+    }
+  }, []);
 
   const handleOpen = (payline = null) => {
     if (payline) {
@@ -45,16 +55,26 @@ const PaylineConfiguration = () => {
   };
 
   const handleSave = () => {
+    let updatedPaylines;
     if (paylines.find(p => p.id === currentPayline.id)) {
-      setPaylines(paylines.map(p => p.id === currentPayline.id ? currentPayline : p));
+      updatedPaylines = paylines.map(p => p.id === currentPayline.id ? currentPayline : p);
     } else {
-      setPaylines([...paylines, currentPayline]);
+      updatedPaylines = [...paylines, currentPayline];
+    }
+    setPaylines(updatedPaylines);
+    // Call IPC to save payline configuration if available
+    if (window.api && window.api.savePaylineConfig) {
+      window.api.savePaylineConfig(updatedPaylines);
     }
     handleClose();
   };
 
   const handleDelete = (id) => {
-    setPaylines(paylines.filter(p => p.id !== id));
+    const updated = paylines.filter(p => p.id !== id);
+    setPaylines(updated);
+    if (window.api && window.api.savePaylineConfig) {
+      window.api.savePaylineConfig(updated);
+    }
   };
 
   const handlePatternChange = (reelIndex, rowIndex) => {
@@ -64,36 +84,36 @@ const PaylineConfiguration = () => {
   };
 
   const handleToggleActive = (id) => {
-    setPaylines(paylines.map(p => 
-      p.id === id ? { ...p, active: !p.active } : p
-    ));
+    const updated = paylines.map(p => p.id === id ? { ...p, active: !p.active } : p);
+    setPaylines(updated);
+    if (window.api && window.api.savePaylineConfig) {
+      window.api.savePaylineConfig(updated);
+    }
   };
 
-  const renderPaylinePattern = (pattern) => {
-    return (
-      <Box sx={{ display: 'flex', alignItems: 'center' }}>
-        {pattern.map((position, index) => (
-          <React.Fragment key={index}>
-            {index > 0 && <ArrowForward sx={{ mx: 1, color: 'grey.500' }} fontSize="small" />}
-            <Box
-              sx={{
-                width: 24,
-                height: 24,
-                borderRadius: '50%',
-                bgcolor: 'primary.main',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                color: 'white'
-              }}
-            >
-              {position + 1}
-            </Box>
-          </React.Fragment>
-        ))}
-      </Box>
-    );
-  };
+  const renderPaylinePattern = (pattern) => (
+    <Box sx={{ display: 'flex', alignItems: 'center' }}>
+      {pattern.map((position, index) => (
+        <React.Fragment key={index}>
+          {index > 0 && <ArrowForward sx={{ mx: 1, color: 'grey.500' }} fontSize="small" />}
+          <Box
+            sx={{
+              width: 24,
+              height: 24,
+              borderRadius: '50%',
+              bgcolor: 'primary.main',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              color: 'white'
+            }}
+          >
+            {position + 1}
+          </Box>
+        </React.Fragment>
+      ))}
+    </Box>
+  );
 
   const renderPaylineEditor = () => {
     if (!currentPayline) return null;
@@ -272,7 +292,6 @@ const PaylineConfiguration = () => {
         </Table>
       </TableContainer>
 
-      {/* Payline Edit Dialog */}
       <Dialog open={open} onClose={handleClose} maxWidth="md" fullWidth>
         <DialogTitle>
           {currentPayline && currentPayline.id && paylines.find(p => p.id === currentPayline.id) 

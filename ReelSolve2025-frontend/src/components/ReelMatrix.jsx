@@ -31,25 +31,14 @@ import {
   Upload as UploadIcon,
   HelpOutline as HelpIcon
 } from '@mui/icons-material';
+import { useSymbolLibrary } from './SymbolLibraryContext'; // Import your shared symbol library
 import './ReelMatrix.css';
 
-// Sample symbol data - in a real app, this would come from your database or state
-const SAMPLE_SYMBOLS = [
-  { id: 'wild', name: 'Wild', color: '#FFD700', special: true },
-  { id: 'scatter', name: 'Scatter', color: '#FF5733', special: true },
-  { id: 'high1', name: 'High 1', color: '#C70039' },
-  { id: 'high2', name: 'High 2', color: '#900C3F' },
-  { id: 'high3', name: 'High 3', color: '#581845' },
-  { id: 'low1', name: 'Low 1', color: '#2471A3' },
-  { id: 'low2', name: 'Low 2', color: '#2E86C1' },
-  { id: 'low3', name: 'Low 3', color: '#3498DB' },
-  { id: 'low4', name: 'Low 4', color: '#AED6F1' },
-];
+// Remove this hardcoded constant
+// const SAMPLE_SYMBOLS = [ ... ];
 
-// TabPanel component for tab content
 function TabPanel(props) {
   const { children, value, index, ...other } = props;
-
   return (
     <div
       role="tabpanel"
@@ -68,9 +57,11 @@ function TabPanel(props) {
 }
 
 const ReelMatrix = ({ onSave, initialConfig = null }) => {
-  // State for reel configuration
+  // Use the shared symbol library from context
+  const { symbols } = useSymbolLibrary();
+
   const [reelConfig, setReelConfig] = useState({
-    selectionMethod: 'percentage', // 'percentage' or 'fixed'
+    selectionMethod: 'percentage',
     reels: initialConfig?.reels || [
       { id: 1, height: 3, symbols: [] },
       { id: 2, height: 3, symbols: [] },
@@ -88,14 +79,14 @@ const ReelMatrix = ({ onSave, initialConfig = null }) => {
     severity: 'success'
   });
   
-  // Load initial configuration if provided
   useEffect(() => {
-    if (initialConfig) {
-      setReelConfig(initialConfig);
+    if (!initialConfig && window.api && window.api.getReelConfig) {
+      window.api.getReelConfig().then(config => {
+        if (config) setReelConfig(config);
+      });
     }
   }, [initialConfig]);
 
-  // Add a new reel
   const addReel = () => {
     const newReel = {
       id: reelConfig.reels.length + 1,
@@ -109,7 +100,6 @@ const ReelMatrix = ({ onSave, initialConfig = null }) => {
     });
   };
 
-  // Remove the last reel
   const removeReel = () => {
     if (reelConfig.reels.length <= 1) {
       setSnackbar({
@@ -129,28 +119,20 @@ const ReelMatrix = ({ onSave, initialConfig = null }) => {
     });
   };
 
-  // Update the height of a specific reel
   const updateReelHeight = (reelIndex, newHeight) => {
     const updatedReels = [...reelConfig.reels];
-    
-    // Ensure height is at least 1
     newHeight = Math.max(1, newHeight);
-    
-    // Update the reel height
     updatedReels[reelIndex] = {
       ...updatedReels[reelIndex],
       height: newHeight
     };
     
-    // Adjust symbols array length to match new height
     if (reelConfig.selectionMethod === 'fixed') {
       const currentSymbols = updatedReels[reelIndex].symbols || [];
       if (newHeight > currentSymbols.length) {
-        // Add empty slots if height increased
         const additionalSlots = Array(newHeight - currentSymbols.length).fill(null);
         updatedReels[reelIndex].symbols = [...currentSymbols, ...additionalSlots];
       } else {
-        // Truncate if height decreased
         updatedReels[reelIndex].symbols = currentSymbols.slice(0, newHeight);
       }
     }
@@ -161,19 +143,12 @@ const ReelMatrix = ({ onSave, initialConfig = null }) => {
     });
   };
 
-  // Change selection method (percentage vs fixed)
   const handleMethodChange = (event) => {
     const method = event.target.value;
-    
-    // Reset symbols configuration when switching methods
-    const updatedReels = reelConfig.reels.map(reel => {
-      return {
-        ...reel,
-        symbols: method === 'fixed' 
-          ? Array(reel.height).fill(null) // For fixed, create array with null slots
-          : [] // For percentage, start with empty array
-      };
-    });
+    const updatedReels = reelConfig.reels.map(reel => ({
+      ...reel,
+      symbols: method === 'fixed' ? Array(reel.height).fill(null) : []
+    }));
     
     setReelConfig({
       ...reelConfig,
@@ -182,12 +157,10 @@ const ReelMatrix = ({ onSave, initialConfig = null }) => {
     });
   };
 
-  // Handle symbol drag start
   const handleDragStart = (symbol) => {
     setDraggingSymbol(symbol);
   };
 
-  // Handle dropping symbol into a reel position (for fixed placement)
   const handleDropOnPosition = (reelIndex, positionIndex) => {
     if (!draggingSymbol || reelConfig.selectionMethod !== 'fixed') return;
     
@@ -208,18 +181,14 @@ const ReelMatrix = ({ onSave, initialConfig = null }) => {
     setDraggingSymbol(null);
   };
 
-  // Update symbol percentages (for percentage-based selection)
   const updateSymbolPercentage = (reelIndex, symbolId, percentage) => {
     if (reelConfig.selectionMethod !== 'percentage') return;
     
     const updatedReels = [...reelConfig.reels];
     const currentSymbols = updatedReels[reelIndex].symbols || [];
-    
-    // Find if symbol already exists in the reel
     const symbolIndex = currentSymbols.findIndex(s => s.id === symbolId);
     
     if (symbolIndex >= 0) {
-      // Update existing symbol
       const updatedSymbols = [...currentSymbols];
       updatedSymbols[symbolIndex] = {
         ...updatedSymbols[symbolIndex],
@@ -227,7 +196,6 @@ const ReelMatrix = ({ onSave, initialConfig = null }) => {
       };
       updatedReels[reelIndex].symbols = updatedSymbols;
     } else {
-      // Add new symbol
       updatedReels[reelIndex].symbols = [
         ...currentSymbols,
         { id: symbolId, percentage }
@@ -240,16 +208,18 @@ const ReelMatrix = ({ onSave, initialConfig = null }) => {
     });
   };
 
-  // Save the current configuration
   const saveConfiguration = () => {
     if (onSave) {
       onSave(reelConfig);
-      setSnackbar({
-        open: true,
-        message: 'Reel configuration saved successfully',
-        severity: 'success'
-      });
     }
+    if (window.api && window.api.saveReelConfig) {
+      window.api.saveReelConfig(reelConfig);
+    }
+    setSnackbar({
+      open: true,
+      message: 'Reel configuration saved successfully',
+      severity: 'success'
+    });
   };
 
   const handleCloseSnackbar = () => {
@@ -337,7 +307,7 @@ const ReelMatrix = ({ onSave, initialConfig = null }) => {
               <Paper elevation={2} sx={{ p: 2 }}>
                 <Typography variant="h6" gutterBottom>Symbol Library</Typography>
                 <Box className="symbol-library" sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
-                  {SAMPLE_SYMBOLS.map(symbol => (
+                  {symbols.map(symbol => (
                     <Box
                       key={symbol.id}
                       className="symbol-item"
@@ -423,7 +393,6 @@ const ReelMatrix = ({ onSave, initialConfig = null }) => {
                       </Box>
                       
                       {reelConfig.selectionMethod === 'fixed' ? (
-                        // Fixed position mode
                         <Box 
                           className="reel-positions"
                           sx={{
@@ -435,7 +404,7 @@ const ReelMatrix = ({ onSave, initialConfig = null }) => {
                         >
                           {Array(reel.height).fill(null).map((_, posIndex) => {
                             const symbolId = reel.symbols[posIndex];
-                            const symbol = SAMPLE_SYMBOLS.find(s => s.id === symbolId);
+                            const symbol = symbols.find(s => s.id === symbolId);
                             
                             return (
                               <Box 
@@ -496,7 +465,6 @@ const ReelMatrix = ({ onSave, initialConfig = null }) => {
                           })}
                         </Box>
                       ) : (
-                        // Percentage-based mode
                         <Box 
                           className="percentage-config"
                           sx={{
@@ -508,7 +476,7 @@ const ReelMatrix = ({ onSave, initialConfig = null }) => {
                             overflow: 'auto'
                           }}
                         >
-                          {SAMPLE_SYMBOLS.map(symbol => {
+                          {symbols.map(symbol => {
                             const symbolConfig = reel.symbols.find(s => s.id === symbol.id);
                             const percentage = symbolConfig ? symbolConfig.percentage : 0;
                             
@@ -597,11 +565,10 @@ const ReelMatrix = ({ onSave, initialConfig = null }) => {
                     
                     if (reelConfig.selectionMethod === 'fixed') {
                       const symbolId = reel.symbols[posIndex];
-                      displaySymbol = SAMPLE_SYMBOLS.find(s => s.id === symbolId);
+                      displaySymbol = symbols.find(s => s.id === symbolId);
                     } else {
-                      // For percentage mode, just show a randomly selected symbol for visualization
-                      const randomIndex = Math.floor(Math.random() * SAMPLE_SYMBOLS.length);
-                      displaySymbol = SAMPLE_SYMBOLS[randomIndex];
+                      const randomIndex = Math.floor(Math.random() * symbols.length);
+                      displaySymbol = symbols[randomIndex];
                     }
                     
                     return (
@@ -627,10 +594,7 @@ const ReelMatrix = ({ onSave, initialConfig = null }) => {
               ))}
             </Paper>
             <Box className="visualization-controls">
-              <Button 
-                variant="contained" 
-                onClick={() => setActiveTab(0)}
-              >
+              <Button variant="contained" onClick={() => setActiveTab(0)}>
                 Back to Editor
               </Button>
             </Box>

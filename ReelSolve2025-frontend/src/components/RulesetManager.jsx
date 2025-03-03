@@ -1,13 +1,12 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   Box, Button, TextField, Paper, Table, TableBody, TableCell, 
   TableContainer, TableHead, TableRow, IconButton, Typography, 
-  Grid, Dialog, DialogActions, DialogContent, DialogTitle, 
+  Grid2, Dialog, DialogActions, DialogContent, DialogTitle, 
   Switch, FormControlLabel, Divider 
 } from '@mui/material';
 import { Add, Edit, Delete } from '@mui/icons-material';
 
-// Sample initial special rules – you can replace these with your own or load from a backend
 const initialRules = [
   { id: 1, name: "Free Spins Trigger", condition: "3 or more Scatter symbols", effect: "Award 10 free spins", active: true },
   { id: 2, name: "Bonus Multiplier", condition: "4 or more Wild symbols", effect: "Apply x2 multiplier", active: true }
@@ -18,7 +17,17 @@ const SpecialRules = () => {
   const [currentRule, setCurrentRule] = useState(null);
   const [open, setOpen] = useState(false);
 
-  // Open dialog for new rule or edit existing rule
+  // Load saved rules from IPC if available
+  useEffect(() => {
+    if (window.api && window.api.getRulesConfig) {
+      window.api.getRulesConfig().then(savedRules => {
+        if (savedRules && savedRules.length > 0) {
+          setSpecialRules(savedRules);
+        }
+      });
+    }
+  }, []);
+
   const handleOpen = (rule = null) => {
     if (rule) {
       setCurrentRule({ ...rule });
@@ -35,37 +44,45 @@ const SpecialRules = () => {
     setOpen(true);
   };
 
-  // Close the dialog and reset current rule state
   const handleClose = () => {
     setOpen(false);
     setCurrentRule(null);
   };
 
-  // Save a new rule or update an existing rule
   const handleSave = () => {
+    let updatedRules;
     if (specialRules.find(r => r.id === currentRule.id)) {
-      setSpecialRules(specialRules.map(r => r.id === currentRule.id ? currentRule : r));
+      updatedRules = specialRules.map(r => r.id === currentRule.id ? currentRule : r);
     } else {
-      setSpecialRules([...specialRules, currentRule]);
+      updatedRules = [...specialRules, currentRule];
+    }
+    setSpecialRules(updatedRules);
+    if (window.api && window.api.saveRulesConfig) {
+      window.api.saveRulesConfig(updatedRules);
     }
     handleClose();
   };
 
-  // Delete a rule by filtering it out
   const handleDelete = (id) => {
-    setSpecialRules(specialRules.filter(r => r.id !== id));
+    const updated = specialRules.filter(r => r.id !== id);
+    setSpecialRules(updated);
+    if (window.api && window.api.saveRulesConfig) {
+      window.api.saveRulesConfig(updated);
+    }
   };
 
-  // Toggle a rule's active status
   const handleToggleActive = (id) => {
-    setSpecialRules(specialRules.map(r => 
+    const updated = specialRules.map(r => 
       r.id === id ? { ...r, active: !r.active } : r
-    ));
+    );
+    setSpecialRules(updated);
+    if (window.api && window.api.saveRulesConfig) {
+      window.api.saveRulesConfig(updated);
+    }
   };
 
   return (
     <Box sx={{ p: 3 }}>
-      {/* Header Section */}
       <Box display="flex" justifyContent="space-between" alignItems="center" mb={3}>
         <Typography variant="h4">Special Rules Configuration</Typography>
         <Button 
@@ -79,7 +96,6 @@ const SpecialRules = () => {
 
       <Divider sx={{ mb: 3 }} />
 
-      {/* Table of Special Rules */}
       <TableContainer component={Paper}>
         <Table>
           <TableHead>
@@ -125,7 +141,6 @@ const SpecialRules = () => {
         </Table>
       </TableContainer>
 
-      {/* Dialog for Creating / Editing a Rule */}
       <Dialog open={open} onClose={handleClose} maxWidth="sm" fullWidth>
         <DialogTitle>
           {currentRule && specialRules.find(r => r.id === currentRule.id) 
@@ -134,9 +149,8 @@ const SpecialRules = () => {
         </DialogTitle>
         <DialogContent>
           <Box sx={{ mt: 2 }}>
-            <Grid container spacing={2}>
-              {/* Rule Name */}
-              <Grid item xs={12}>
+            <Grid2 container spacing={2}>
+              <Grid2 item xs={12}>
                 <TextField
                   fullWidth
                   label="Rule Name"
@@ -144,9 +158,8 @@ const SpecialRules = () => {
                   onChange={(e) => setCurrentRule({ ...currentRule, name: e.target.value })}
                   margin="normal"
                 />
-              </Grid>
-              {/* Rule Condition */}
-              <Grid item xs={12}>
+              </Grid2>
+              <Grid2 item xs={12}>
                 <TextField
                   fullWidth
                   label="Condition"
@@ -155,9 +168,8 @@ const SpecialRules = () => {
                   margin="normal"
                   helperText="E.g., '3 or more Scatter symbols'"
                 />
-              </Grid>
-              {/* Rule Effect */}
-              <Grid item xs={12}>
+              </Grid2>
+              <Grid2 item xs={12}>
                 <TextField
                   fullWidth
                   label="Effect"
@@ -166,9 +178,8 @@ const SpecialRules = () => {
                   margin="normal"
                   helperText="E.g., 'Award 10 free spins' or 'Apply x2 multiplier'"
                 />
-              </Grid>
-              {/* Active Toggle */}
-              <Grid item xs={12}>
+              </Grid2>
+              <Grid2 item xs={12}>
                 <FormControlLabel
                   control={
                     <Switch
@@ -179,8 +190,8 @@ const SpecialRules = () => {
                   }
                   label="Active Rule"
                 />
-              </Grid>
-            </Grid>
+              </Grid2>
+            </Grid2>
           </Box>
         </DialogContent>
         <DialogActions>

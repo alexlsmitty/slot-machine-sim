@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { 
   Box, Button, TextField, Dialog, DialogActions, DialogContent, 
   DialogTitle, Paper, Table, TableBody, TableCell, TableContainer, 
@@ -6,23 +6,17 @@ import {
   Slider, FormControl, InputLabel, Select, MenuItem 
 } from '@mui/material';
 import { Delete, Edit, Add, ColorLens } from '@mui/icons-material';
-
-// Sample initial symbols - replace with data from your backend
-const initialSymbols = [
-  { id: 1, name: 'Wild', image: 'wild.png', color: '#FFD700', payouts: { 3: 5, 4: 25, 5: 100 }, isWild: true, isScatter: false },
-  { id: 2, name: 'Scatter', image: 'scatter.png', color: '#FF5722', payouts: { 3: 5, 4: 10, 5: 50 }, isWild: false, isScatter: true },
-  { id: 3, name: 'Diamond', image: 'diamond.png', color: '#00BCD4', payouts: { 3: 3, 4: 8, 5: 25 }, isWild: false, isScatter: false },
-];
+import { useSymbolLibrary } from './SymbolLibraryContext'; // Adjust the path as needed
 
 const SymbolManager = () => {
-  const [symbols, setSymbols] = useState(initialSymbols);
+  const { symbols, setSymbols } = useSymbolLibrary();
   const [currentSymbol, setCurrentSymbol] = useState(null);
   const [open, setOpen] = useState(false);
   const [tabValue, setTabValue] = useState(0);
 
   const handleOpen = (symbol = null) => {
     if (symbol) {
-      setCurrentSymbol({...symbol});
+      setCurrentSymbol({ ...symbol });
     } else {
       setCurrentSymbol({
         id: symbols.length ? Math.max(...symbols.map(s => s.id)) + 1 : 1,
@@ -47,16 +41,21 @@ const SymbolManager = () => {
   };
 
   const handleSave = () => {
+    let updatedSymbols;
     if (symbols.find(s => s.id === currentSymbol.id)) {
-      setSymbols(symbols.map(s => s.id === currentSymbol.id ? currentSymbol : s));
+      updatedSymbols = symbols.map(s => s.id === currentSymbol.id ? currentSymbol : s);
     } else {
-      setSymbols([...symbols, currentSymbol]);
+      updatedSymbols = [...symbols, currentSymbol];
     }
+    setSymbols(updatedSymbols);
+    // Optionally: window.api.saveSymbolConfig(updatedSymbols);
     handleClose();
   };
 
   const handleDelete = (id) => {
-    setSymbols(symbols.filter(s => s.id !== id));
+    const updated = symbols.filter(s => s.id !== id);
+    setSymbols(updated);
+    // Optionally: window.api.saveSymbolConfig(updated);
   };
 
   const handlePayoutChange = (length, value) => {
@@ -70,7 +69,6 @@ const SymbolManager = () => {
     setCurrentSymbol({ ...currentSymbol, [field]: value });
   };
 
-  // Simplified symbol preview - replace with actual visualization logic
   const SymbolPreview = ({ symbol }) => (
     <Box 
       width={80} 
@@ -91,11 +89,7 @@ const SymbolManager = () => {
     <Box sx={{ p: 3 }}>
       <Box display="flex" justifyContent="space-between" alignItems="center" mb={3}>
         <Typography variant="h4">Symbol Manager</Typography>
-        <Button 
-          variant="contained" 
-          startIcon={<Add />} 
-          onClick={() => handleOpen()}
-        >
+        <Button variant="contained" startIcon={<Add />} onClick={() => handleOpen()}>
           Add New Symbol
         </Button>
       </Box>
@@ -139,7 +133,6 @@ const SymbolManager = () => {
         </Table>
       </TableContainer>
 
-      {/* Symbol Edit Dialog */}
       <Dialog open={open} onClose={handleClose} maxWidth="md" fullWidth>
         <DialogTitle>
           {currentSymbol && currentSymbol.id && symbols.find(s => s.id === currentSymbol.id) 
