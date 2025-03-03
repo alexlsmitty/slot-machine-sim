@@ -1,0 +1,147 @@
+.reel-container {
+    display: flex;
+    gap: 16px;
+    overflow-x: auto;
+    padding-bottom: 16px;
+  }
+  
+  .reel-column {
+    min-width: 120px;
+    border: 1px solid #d9d9d9;
+    border-radius: 4px;
+    background-color: #fafafa;
+  }
+  
+  .reel-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 12px;
+    background-color: #f0f0f0;
+    border-bottom: 1px solid #d9d9d9;
+  }
+  
+  .height-input {
+    width: 60px;
+  }
+  
+  .reel-positions {
+    display: flex;
+    flex-direction: column;
+    padding: 8px;
+    gap: 8px;
+  }
+  
+  .reel-position {
+    min-height: 50px;
+    border: 1px dashed #d9d9d9;
+    border-radius: 4px;
+    background-color: #ffffff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  
+  .empty-position {
+    color: #bfbfbf;
+    font-size: 12px;
+    text-align: center;
+  }
+  
+  .symbol-library {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 8px;
+  }
+  
+  .symbol-item {
+    padding: 8px;
+    border-radius: 4px;
+    color: white;
+    text-align: center;
+    cursor: grab;
+    position: relative;
+    font-size: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 40px;
+  }
+  
+  .special-indicator {
+    position: absolute;
+    top: 2px;
+    right: 2px;
+    font-size: 10px;
+  }
+  
+  .percentage-config {
+    padding: 8px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  
+  .symbol-percentage {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  
+  .symbol-mini {
+    width: 24px;
+    height: 24px;
+    border-radius: 4px;
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    font-weight: bold;
+  }
+  
+  .control-label {
+    margin-bottom: 8px;
+    font-weight: 500;
+  }
+  
+  .reel-visualization {
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 24px;
+  }
+  
+  .visible-window {
+    display: flex;
+    gap: 4px;
+    padding: 16px;
+    background-color: #141414;
+    border-radius: 8px;
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.2);
+  }
+  
+  .vis-reel {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+  
+  .vis-position {
+    width: 80px;
+    height: 80px;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-weight: bold;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  }
+  
+  .visualization-controls {
+    display: flex;
+    gap: 16px;
+  }
+  
