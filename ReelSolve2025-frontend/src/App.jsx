@@ -26,13 +26,15 @@ import {
   PlayCircle as PlayCircleIcon,
   ChevronLeft as ChevronLeftIcon,
   Menu as MenuIcon,
-  Gavel as GavelIcon
+  Gavel as GavelIcon,
+  CardGiftcard as CardGiftcardIcon
 } from '@mui/icons-material';
 
 import ReelMatrix from './components/ReelMatrix';
 import SymbolManager from './components/SymbolManager';
 import PaylineConfig from './components/PaylineConfig';
 import RulesetManager from './components/RulesetManager';
+import BonusManager from './components/BonusManager';
 import RTPCalculator from './components/RTPCalculator';
 import { SymbolLibraryProvider } from './components/SymbolLibraryContext';
 
@@ -98,11 +100,13 @@ const App = () => {
     setSnackbar({ ...snackbar, open: false });
   };
 
+  // Update breadcrumb text mapping with new "bonus" menu.
   const breadcrumbText = {
     reel: "Reel Setup",
     symbol: "Symbol Setup",
     payline: "Payline Configuration",
     rules: "Ruleset Manager",
+    bonus: "Bonus Rounds",
     simulation: "Simulation"
   }[selectedMenu];
 
@@ -110,10 +114,7 @@ const App = () => {
     <SymbolLibraryProvider>
       <Box sx={{ display: 'flex', minHeight: '100vh' }}>
         <CssBaseline />
-        <AppBar 
-          position="fixed" 
-          sx={{ zIndex: (theme) => theme.zIndex.drawer + 1 }}
-        >
+        <AppBar position="fixed" sx={{ zIndex: (theme) => theme.zIndex.drawer + 1 }}>
           <Toolbar>
             <IconButton
               color="inherit"
@@ -142,12 +143,12 @@ const App = () => {
           anchor="left"
           open={open}
         >
-          <Box 
-            sx={{ 
-              display: 'flex', 
-              alignItems: 'center', 
-              padding: 1, 
-              justifyContent: 'flex-end' 
+          <Box
+            sx={{
+              display: 'flex',
+              alignItems: 'center',
+              padding: 1,
+              justifyContent: 'flex-end',
             }}
           >
             <IconButton onClick={handleDrawerClose}>
@@ -202,6 +203,17 @@ const App = () => {
             </ListItem>
             <ListItem disablePadding>
               <ListItemButton
+                selected={selectedMenu === 'bonus'}
+                onClick={() => setSelectedMenu('bonus')}
+              >
+                <ListItemIcon>
+                  <CardGiftcardIcon />
+                </ListItemIcon>
+                <ListItemText primary="Bonus Rounds" />
+              </ListItemButton>
+            </ListItem>
+            <ListItem disablePadding>
+              <ListItemButton
                 selected={selectedMenu === 'simulation'}
                 onClick={() => setSelectedMenu('simulation')}
               >
@@ -215,14 +227,15 @@ const App = () => {
         </Drawer>
         <Box
           component="main"
-          sx={{ 
-            flexGrow: 1, 
+          sx={{
+            flexGrow: 1,
             p: 3,
             marginLeft: open ? `${drawerWidth}px` : 0,
-            transition: (theme) => theme.transitions.create('margin', {
-              easing: theme.transitions.easing.sharp,
-              duration: theme.transitions.duration.leavingScreen,
-            }),
+            transition: (theme) =>
+              theme.transitions.create('margin', {
+                easing: theme.transitions.easing.sharp,
+                duration: theme.transitions.duration.leavingScreen,
+              }),
           }}
         >
           <Toolbar />
@@ -235,7 +248,7 @@ const App = () => {
             </Link>
             <Typography color="text.primary">{breadcrumbText}</Typography>
           </Breadcrumbs>
-          
+
           {/* Main content and RTP calculator side by side */}
           <Box sx={{ display: 'flex', gap: 2 }}>
             <Box sx={{ flexGrow: 1 }}>
@@ -245,6 +258,7 @@ const App = () => {
               {selectedMenu === 'symbol' && <SymbolManager />}
               {selectedMenu === 'payline' && <PaylineConfig />}
               {selectedMenu === 'rules' && <RulesetManager />}
+              {selectedMenu === 'bonus' && <BonusManager />}
               {selectedMenu === 'simulation' && (
                 <Box sx={{ p: 3 }}>
                   <Typography variant="h5">Simulation Component Coming Soon</Typography>
