@@ -3,7 +3,7 @@ import {
   Box,
   Button,
   FormControl,
-  Grid,
+  Grid2,
   IconButton,
   InputLabel,
   MenuItem,
@@ -22,6 +22,7 @@ import {
 } from '@mui/material';
 import { Delete, Edit, Add } from '@mui/icons-material';
 import { useSymbolLibrary } from './SymbolLibraryContext';
+import SectionHeader from '../sectionHeader';
 
 // Bonus type options
 const BONUS_TYPES = [
@@ -191,24 +192,22 @@ const BonusManager = () => {
 
   return (
     <Box sx={{ p: 3 }}>
-      <Typography variant="h4" gutterBottom>
-        Bonus & Bonus Round Manager
-      </Typography>
+      <SectionHeader title="Bonus Manager" />
       
       <Paper sx={{ p: 2, mb: 3 }}>
         <Typography variant="h6" gutterBottom>
           Create / Edit Bonus
         </Typography>
-        <Grid container spacing={2}>
-          <Grid item xs={12}>
+        <Grid2 container spacing={2}>
+          <Grid2 item xs={12}>
             <TextField
               label="Bonus Name"
               value={bonusName}
               onChange={(e) => setBonusName(e.target.value)}
               fullWidth
             />
-          </Grid>
-          <Grid item xs={12} sm={6}>
+          </Grid2>
+          <Grid2 item xs={12} sm={6}>
             <FormControl fullWidth>
               <InputLabel>Bonus Type</InputLabel>
               <Select
@@ -221,8 +220,8 @@ const BonusManager = () => {
                 ))}
               </Select>
             </FormControl>
-          </Grid>
-          <Grid item xs={12} sm={6}>
+          </Grid2>
+          <Grid2 item xs={12} sm={6}>
             <FormControl fullWidth>
               <InputLabel>Trigger Type</InputLabel>
               <Select
@@ -235,8 +234,8 @@ const BonusManager = () => {
                 ))}
               </Select>
             </FormControl>
-          </Grid>
-          <Grid item xs={12} sm={6}>
+          </Grid2>
+          <Grid2 item xs={12} sm={6}>
             <TextField
               label="Trigger Value (%)"
               type="number"
@@ -244,9 +243,9 @@ const BonusManager = () => {
               onChange={(e) => setTriggerValue(e.target.value)}
               fullWidth
             />
-          </Grid>
+          </Grid2>
           {/* Bonus Reel Symbols: instead of a JSON input, use a multi-select */}
-          <Grid item xs={12}>
+          <Grid2 item xs={12}>
             <FormControl fullWidth>
               <InputLabel id="bonus-reel-label">Bonus Reel Symbols</InputLabel>
               <Select
@@ -266,10 +265,10 @@ const BonusManager = () => {
                 Select the symbols to be used for the bonus round reel configuration.
               </FormHelperText>
             </FormControl>
-          </Grid>
+          </Grid2>
           {/* JSON Output for Bonus Reel Configuration */}
           {bonusReelSymbolIds.length > 0 && (
-            <Grid item xs={12}>
+            <Grid2 item xs={12}>
               <TextField
                 label="Bonus Reel Configuration (JSON)"
                 value={bonusReelConfigJSON}
@@ -279,23 +278,23 @@ const BonusManager = () => {
                   readOnly: true,
                 }}
               />
-            </Grid>
+            </Grid2>
           )}
           {/* Jackpot Configuration */}
           {BONUS_TYPES_WITH_JACKPOTS.includes(bonusType) && (
-            <Grid item xs={12}>
+            <Grid2 item xs={12}>
               <Typography variant="subtitle1">Jackpot Configuration</Typography>
               {jackpots.map((jackpot) => (
-                <Grid container spacing={1} key={jackpot.id} alignItems="center">
-                  <Grid item xs={4}>
+                <Grid2 container spacing={1} key={jackpot.id} alignItems="center">
+                  <Grid2 item xs={4}>
                     <TextField
                       label="Jackpot Name"
                       value={jackpot.name}
                       onChange={(e) => updateJackpot(jackpot.id, 'name', e.target.value)}
                       fullWidth
                     />
-                  </Grid>
-                  <Grid item xs={3}>
+                  </Grid2>
+                  <Grid2 item xs={3}>
                     <TextField
                       label="Payout"
                       type="number"
@@ -303,8 +302,8 @@ const BonusManager = () => {
                       onChange={(e) => updateJackpot(jackpot.id, 'payout', parseFloat(e.target.value))}
                       fullWidth
                     />
-                  </Grid>
-                  <Grid item xs={3}>
+                  </Grid2>
+                  <Grid2 item xs={3}>
                     <TextField
                       label="Multiplier"
                       type="number"
@@ -312,23 +311,23 @@ const BonusManager = () => {
                       onChange={(e) => updateJackpot(jackpot.id, 'multiplier', parseFloat(e.target.value))}
                       fullWidth
                     />
-                  </Grid>
-                  <Grid item xs={2}>
+                  </Grid2>
+                  <Grid2 item xs={2}>
                     <IconButton onClick={() => removeJackpot(jackpot.id)}>
                       <Delete />
                     </IconButton>
-                  </Grid>
-                </Grid>
+                  </Grid2>
+                </Grid2>
               ))}
               <Box sx={{ mt: 1 }}>
                 <Button variant="outlined" startIcon={<Add />} onClick={addJackpot}>
                   Add Jackpot
                 </Button>
               </Box>
-            </Grid>
+            </Grid2>
           )}
           {/* Combination Bonuses */}
-          <Grid item xs={12}>
+          <Grid2 item xs={12}>
             <FormControl fullWidth>
               <InputLabel>Combine With (Bonus IDs)</InputLabel>
               <Select
@@ -346,9 +345,9 @@ const BonusManager = () => {
                 ))}
               </Select>
             </FormControl>
-          </Grid>
+          </Grid2>
           {/* Save / Cancel Button */}
-          <Grid item xs={12}>
+          <Grid2 item xs={12}>
             <Button variant="contained" onClick={handleSave}>
               {isEditing ? 'Update Bonus' : 'Add Bonus'}
             </Button>
@@ -357,8 +356,8 @@ const BonusManager = () => {
                 Cancel
               </Button>
             )}
-          </Grid>
-        </Grid>
+          </Grid2>
+        </Grid2>
       </Paper>
       
       {/* RTP Calculation Section */}

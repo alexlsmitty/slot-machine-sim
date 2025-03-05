@@ -1,284 +1,290 @@
-import React, { useState, useEffect } from 'react';
-import {
-  AppBar,
-  Box,
-  Breadcrumbs,
-  Button,
-  CssBaseline,
-  Divider,
-  Drawer,
-  IconButton,
-  Link,
-  List,
-  ListItem,
-  ListItemButton,
-  ListItemIcon,
-  ListItemText,
-  Snackbar,
-  Toolbar,
-  Typography
+import React, { useEffect, useState } from 'react';
+import { 
+  Box, AppBar, Toolbar, Typography, Drawer, List, ListItem, 
+  ListItemButton, ListItemIcon, ListItemText, IconButton, 
+  useMediaQuery, useTheme, Tooltip
 } from '@mui/material';
 import {
-  Apps as AppsIcon,
-  Settings as SettingsIcon,
-  ShowChart as LineChartIcon,
-  Save as SaveIcon,
-  PlayCircle as PlayCircleIcon,
-  ChevronLeft as ChevronLeftIcon,
+  Casino as CasinoIcon,
+  ViewModule as ReelIcon,
+  Payments as PaylineIcon,
+  Settings as RulesetIcon,
+  Stars as BonusIcon,
+  Calculate as RTPIcon,
   Menu as MenuIcon,
-  Gavel as GavelIcon,
-  CardGiftcard as CardGiftcardIcon
+  ChevronLeft as ChevronLeftIcon
 } from '@mui/icons-material';
+import './App.css';
+import ReelMatrix from './components/MainTabComponents/ReelMatrix';
+import SymbolManager from './components/MainTabComponents/SymbolManager';
+import PaylineConfig from './components/MainTabComponents/PaylineConfig';
+import RulesetManager from './components/MainTabComponents/RulesetComponents/RulesetManager';
+import BonusManager from './components/MainTabComponents/BonusManager';
+import RTPCalculator from './components/MainTabComponents/RTPCalculator';
+import { SymbolLibraryProvider } from './components/MainTabComponents/SymbolLibraryContext';
+import ConfigurationManager from './components/MainTabComponents/ConfigurationManager';
 
-import ReelMatrix from './components/ReelMatrix';
-import SymbolManager from './components/SymbolManager';
-import PaylineConfig from './components/PaylineConfig';
-import RulesetManager from './components/RulesetManager';
-import BonusManager from './components/BonusManager';
-import RTPCalculator from './components/RTPCalculator';
-import { SymbolLibraryProvider } from './components/SymbolLibraryContext';
+function App() {
+  const [currentView, setCurrentView] = useState('symbols');
+  const [drawerOpen, setDrawerOpen] = useState(true);
+  const theme = useTheme();
+  const isSmallScreen = useMediaQuery(theme.breakpoints.down('md'));
+  const [location, setLocation] = useState(window.location.pathname);
 
-const drawerWidth = 240;
-
-const App = () => {
-  const [selectedMenu, setSelectedMenu] = useState('reel');
-  const [reelConfig, setReelConfig] = useState(null);
-  const [open, setOpen] = useState(true);
-  const [snackbar, setSnackbar] = useState({
-    open: false,
-    message: '',
-    severity: 'success'
-  });
-
-  // Load initial reel configuration via IPC if available
+  // Auto-save when changing views
   useEffect(() => {
-    if (window.api && window.api.getReelConfig) {
-      window.api.getReelConfig().then(config => {
-        if (config) {
-          setReelConfig(config);
+    // Save the current state when navigating away from a view
+    return () => {
+      if (window.api && window.api.quickSaveConfiguration) {
+        window.api.quickSaveConfiguration().catch(error => {
+          console.error('Error auto-saving:', error);
+        });
+      }
+    };
+  }, [currentView]);
+
+  // Save navigation state
+  useEffect(() => {
+    if (window.api && window.api.saveNavigationState) {
+      window.api.saveNavigationState({ currentView });
+    }
+  }, [currentView]);
+
+  // Load navigation state on mount
+  useEffect(() => {
+    if (window.api && window.api.getNavigationState) {
+      window.api.getNavigationState().then(state => {
+        if (state && state.currentView) {
+          setCurrentView(state.currentView);
         }
       });
     }
   }, []);
 
-  const saveToDatabase = async (config) => {
-    try {
-      if (window.api && window.api.saveReelConfig) {
-        await window.api.saveReelConfig(config);
-      } else {
-        console.log('Saved config:', config);
+  // Auto-save when user navigates between components
+  useEffect(() => {
+    const handleRouteChange = () => {
+      const newPath = window.location.pathname;
+      
+      if (newPath !== location) {
+        // Route has changed, autosave the current state
+        if (window.api && window.api.autoSaveState) {
+          window.api.autoSaveState()
+            .then(result => {
+              if (!result.success) {
+                console.warn('Auto-save failed:', result.error);
+              }
+            })
+            .catch(err => {
+              console.error('Auto-save error:', err);
+            });
+        }
+        
+        setLocation(newPath);
       }
-      setSnackbar({
-        open: true,
-        message: 'Configuration saved to database',
-        severity: 'success'
+    };
+
+    // Listen for history changes
+    window.addEventListener('popstate', handleRouteChange);
+    
+    // Clean up event listener
+    return () => {
+      window.removeEventListener('popstate', handleRouteChange);
+    };
+  }, [location]);
+
+  const handleViewChange = (view) => {
+    // Auto-save before changing views
+    if (window.api && window.api.quickSaveConfiguration) {
+      window.api.quickSaveConfiguration().then(() => {
+        setCurrentView(view);
+        if (isSmallScreen) {
+          setDrawerOpen(false);
+        }
+      }).catch(error => {
+        console.error('Error saving before navigation:', error);
+        // Still change the view even if save fails
+        setCurrentView(view);
+        if (isSmallScreen) {
+          setDrawerOpen(false);
+        }
       });
-    } catch (error) {
-      console.error('Error saving config:', error);
-      setSnackbar({
-        open: true,
-        message: 'Failed to save configuration',
-        severity: 'error'
-      });
+    } else {
+      setCurrentView(view);
+      if (isSmallScreen) {
+        setDrawerOpen(false);
+      }
     }
   };
 
-  const handleDrawerOpen = () => {
-    setOpen(true);
+  const toggleDrawer = () => {
+    setDrawerOpen(!drawerOpen);
   };
 
-  const handleDrawerClose = () => {
-    setOpen(false);
-  };
+  // Update the renderView function
 
-  const handleSaveReelConfig = (config) => {
-    setReelConfig(config);
-    saveToDatabase(config);
-  };
+const renderView = () => {
+  const view = (() => {
+    switch (currentView) {
+      case 'symbols':
+        return <SymbolManager />;
+      case 'reels':
+        return <ReelMatrix />;
+      case 'paylines':
+        return <PaylineConfig />;
+      case 'rules':
+        return <RulesetManager />;
+      case 'bonus':
+        return <BonusManager />;
+      case 'rtp':
+        return <RTPCalculator />;
+      default:
+        return <SymbolManager />;
+    }
+  })();
 
-  const handleCloseSnackbar = () => {
-    setSnackbar({ ...snackbar, open: false });
-  };
+  // Wrap with a fade-in effect for smoother transitions
+  return (
+    <Box
+      sx={{
+        animation: 'fadeIn 0.3s ease-in-out',
+        '@keyframes fadeIn': {
+          '0%': {
+            opacity: 0,
+          },
+          '100%': {
+            opacity: 1,
+          },
+        },
+      }}
+    >
+      {view}
+    </Box>
+  );
+};
 
-  // Update breadcrumb text mapping with new "bonus" menu.
-  const breadcrumbText = {
-    reel: "Reel Setup",
-    symbol: "Symbol Setup",
-    payline: "Payline Configuration",
-    rules: "Ruleset Manager",
-    bonus: "Bonus Rounds",
-    simulation: "Simulation"
-  }[selectedMenu];
+  const drawerWidth = 240;
 
   return (
     <SymbolLibraryProvider>
       <Box sx={{ display: 'flex', minHeight: '100vh' }}>
-        <CssBaseline />
-        <AppBar position="fixed" sx={{ zIndex: (theme) => theme.zIndex.drawer + 1 }}>
-          <Toolbar>
-            <IconButton
-              color="inherit"
-              aria-label="open drawer"
-              onClick={handleDrawerOpen}
-              edge="start"
-              sx={{ mr: 2, ...(open && { display: 'none' }) }}
-            >
-              <MenuIcon />
-            </IconButton>
-            <Typography variant="h6" noWrap component="div">
-              ReelSolve 2025
-            </Typography>
+        {/* App Bar */}
+        <AppBar 
+          position="fixed" 
+          sx={{ 
+            zIndex: theme.zIndex.drawer + 1,
+            backgroundImage: 'var(--gradient-header)',
+            boxShadow: 'var(--shadow-glow)'
+          }}
+        >
+          <Toolbar sx={{ justifyContent: 'space-between' }}>
+            <Box sx={{ display: 'flex', alignItems: 'center' }}>
+              {isSmallScreen && (
+                <IconButton
+                  color="inherit"
+                  aria-label="toggle drawer"
+                  onClick={toggleDrawer}
+                  edge="start"
+                  sx={{ mr: 2 }}
+                >
+                  {drawerOpen ? <ChevronLeftIcon /> : <MenuIcon />}
+                </IconButton>
+              )}
+              <CasinoIcon sx={{ mr: 1 }} />
+              <Typography variant="h6" noWrap component="div" sx={{ fontWeight: 600 }}>
+                ReelSolve 2025
+              </Typography>
+            </Box>
+            
+            {/* Global Controls in the App Bar */}
+            <ConfigurationManager />
           </Toolbar>
         </AppBar>
+
+        {/* Navigation Drawer */}
         <Drawer
+          variant={isSmallScreen ? "temporary" : "permanent"}
+          open={drawerOpen}
+          onClose={() => setDrawerOpen(false)}
           sx={{
             width: drawerWidth,
             flexShrink: 0,
             '& .MuiDrawer-paper': {
               width: drawerWidth,
               boxSizing: 'border-box',
+              backgroundColor: 'var(--background-secondary)',
+              backgroundImage: 'var(--gradient-sidebar)',
+              border: 'none',
+              boxShadow: 'var(--shadow-strong)',
+              height: '100%', // Ensure full height
+              position: isSmallScreen ? 'fixed' : 'relative', // Use fixed position on small screens
+              zIndex: theme.zIndex.drawer,
             },
           }}
-          variant="persistent"
-          anchor="left"
-          open={open}
         >
-          <Box
-            sx={{
-              display: 'flex',
-              alignItems: 'center',
-              padding: 1,
-              justifyContent: 'flex-end',
-            }}
-          >
-            <IconButton onClick={handleDrawerClose}>
-              <ChevronLeftIcon />
-            </IconButton>
+          <Toolbar /> {/* Space for the app bar */}
+          <Box sx={{ 
+            overflow: 'auto', 
+            p: 1, 
+            height: '100%', // Ensure full height
+            display: 'flex',
+            flexDirection: 'column'
+          }}>
+            <List sx={{ flexGrow: 1 }}>
+              {[
+                { id: 'symbols', text: 'Symbol Manager', icon: <CasinoIcon /> },
+                { id: 'reels', text: 'Reel Matrix', icon: <ReelIcon /> },
+                { id: 'paylines', text: 'Payline Config', icon: <PaylineIcon /> },
+                { id: 'rules', text: 'Ruleset Manager', icon: <RulesetIcon /> },
+                { id: 'bonus', text: 'Bonus Manager', icon: <BonusIcon /> },
+                { id: 'rtp', text: 'RTP Calculator', icon: <RTPIcon /> }
+              ].map((item) => (
+                <ListItem key={item.id} disablePadding>
+                  <ListItemButton 
+                    onClick={() => handleViewChange(item.id)}
+                    selected={currentView === item.id}
+                  >
+                    <ListItemIcon>{item.icon}</ListItemIcon>
+                    <ListItemText primary={item.text} />
+                  </ListItemButton>
+                </ListItem>
+              ))}
+            </List>
           </Box>
-          <Divider />
-          <List>
-            <ListItem disablePadding>
-              <ListItemButton
-                selected={selectedMenu === 'reel'}
-                onClick={() => setSelectedMenu('reel')}
-              >
-                <ListItemIcon>
-                  <SettingsIcon />
-                </ListItemIcon>
-                <ListItemText primary="Reel Configuration" />
-              </ListItemButton>
-            </ListItem>
-            <ListItem disablePadding>
-              <ListItemButton
-                selected={selectedMenu === 'symbol'}
-                onClick={() => setSelectedMenu('symbol')}
-              >
-                <ListItemIcon>
-                  <AppsIcon />
-                </ListItemIcon>
-                <ListItemText primary="Symbol Setup" />
-              </ListItemButton>
-            </ListItem>
-            <ListItem disablePadding>
-              <ListItemButton
-                selected={selectedMenu === 'payline'}
-                onClick={() => setSelectedMenu('payline')}
-              >
-                <ListItemIcon>
-                  <LineChartIcon />
-                </ListItemIcon>
-                <ListItemText primary="Paylines" />
-              </ListItemButton>
-            </ListItem>
-            <ListItem disablePadding>
-              <ListItemButton
-                selected={selectedMenu === 'rules'}
-                onClick={() => setSelectedMenu('rules')}
-              >
-                <ListItemIcon>
-                  <GavelIcon />
-                </ListItemIcon>
-                <ListItemText primary="Ruleset Manager" />
-              </ListItemButton>
-            </ListItem>
-            <ListItem disablePadding>
-              <ListItemButton
-                selected={selectedMenu === 'bonus'}
-                onClick={() => setSelectedMenu('bonus')}
-              >
-                <ListItemIcon>
-                  <CardGiftcardIcon />
-                </ListItemIcon>
-                <ListItemText primary="Bonus Rounds" />
-              </ListItemButton>
-            </ListItem>
-            <ListItem disablePadding>
-              <ListItemButton
-                selected={selectedMenu === 'simulation'}
-                onClick={() => setSelectedMenu('simulation')}
-              >
-                <ListItemIcon>
-                  <PlayCircleIcon />
-                </ListItemIcon>
-                <ListItemText primary="Simulation" />
-              </ListItemButton>
-            </ListItem>
-          </List>
         </Drawer>
-        <Box
-          component="main"
-          sx={{
+
+        {/* Main Content */}
+        <Box 
+          component="main" 
+          sx={{ 
             flexGrow: 1,
-            p: 3,
-            marginLeft: open ? `${drawerWidth}px` : 0,
-            transition: (theme) =>
-              theme.transitions.create('margin', {
-                easing: theme.transitions.easing.sharp,
-                duration: theme.transitions.duration.leavingScreen,
-              }),
+            p: 3, // Add padding around all sides
+            ml: isSmallScreen ? 0 : `${drawerWidth}px`, // Add left margin equal to drawer width on larger screens
+            width: isSmallScreen ? '100%' : `calc(100% - ${drawerWidth}px)`, // Ensure proper width calculation
+            bgcolor: 'var(--background-primary)',
+            transition: theme.transitions.create(['margin', 'width'], {
+              easing: theme.transitions.easing.sharp,
+              duration: theme.transitions.duration.leavingScreen,
+            }),
+            minHeight: '100vh', // Ensure minimum height
+            boxSizing: 'border-box', // Include padding in width calculations
           }}
         >
-          <Toolbar />
-          <Breadcrumbs aria-label="breadcrumb" sx={{ my: 2 }}>
-            <Link underline="hover" color="inherit" href="/">
-              Home
-            </Link>
-            <Link underline="hover" color="inherit" href="/">
-              Slot Configuration
-            </Link>
-            <Typography color="text.primary">{breadcrumbText}</Typography>
-          </Breadcrumbs>
-
-          {/* Main content and RTP calculator side by side */}
-          <Box sx={{ display: 'flex', gap: 2 }}>
-            <Box sx={{ flexGrow: 1 }}>
-              {selectedMenu === 'reel' && (
-                <ReelMatrix onSave={handleSaveReelConfig} initialConfig={reelConfig} />
-              )}
-              {selectedMenu === 'symbol' && <SymbolManager />}
-              {selectedMenu === 'payline' && <PaylineConfig />}
-              {selectedMenu === 'rules' && <RulesetManager />}
-              {selectedMenu === 'bonus' && <BonusManager />}
-              {selectedMenu === 'simulation' && (
-                <Box sx={{ p: 3 }}>
-                  <Typography variant="h5">Simulation Component Coming Soon</Typography>
-                </Box>
-              )}
-            </Box>
-            <Box sx={{ width: '300px' }}>
-              <RTPCalculator reelConfig={reelConfig} />
-            </Box>
+          <Toolbar /> {/* Space for the app bar */}
+          <Box 
+            sx={{ 
+              borderRadius: 2,
+              overflow: 'hidden',
+              boxShadow: 'var(--shadow-soft)',
+              mb: 4 // Add bottom margin to create space between content and viewport edge
+            }}
+          >
+            {renderView()}
           </Box>
         </Box>
-        <Snackbar
-          open={snackbar.open}
-          autoHideDuration={6000}
-          onClose={handleCloseSnackbar}
-          message={snackbar.message}
-        />
       </Box>
     </SymbolLibraryProvider>
   );
-};
+}
 
 export default App;

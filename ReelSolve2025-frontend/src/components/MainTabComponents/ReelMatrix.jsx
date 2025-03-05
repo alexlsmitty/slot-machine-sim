@@ -32,10 +32,6 @@ import {
   HelpOutline as HelpIcon
 } from '@mui/icons-material';
 import { useSymbolLibrary } from './SymbolLibraryContext'; // Import your shared symbol library
-import './ReelMatrix.css';
-
-// Remove this hardcoded constant
-// const SAMPLE_SYMBOLS = [ ... ];
 
 function TabPanel(props) {
   const { children, value, index, ...other } = props;
@@ -63,11 +59,101 @@ const ReelMatrix = ({ onSave, initialConfig = null }) => {
   const [reelConfig, setReelConfig] = useState({
     selectionMethod: 'percentage',
     reels: initialConfig?.reels || [
-      { id: 1, height: 3, symbols: [] },
-      { id: 2, height: 3, symbols: [] },
-      { id: 3, height: 3, symbols: [] },
-      { id: 4, height: 3, symbols: [] },
-      { id: 5, height: 3, symbols: [] },
+      // Reel 1
+      { 
+        id: 1, 
+        height: 3, 
+        visibleHeight: 3, 
+        symbols: [
+          { id: 1, percentage: 5 },   // Diamond (rare)
+          { id: 2, percentage: 8 },   // Seven
+          { id: 3, percentage: 10 },  // Triple Bar
+          { id: 4, percentage: 12 },  // Bell
+          { id: 5, percentage: 14 },  // Watermelon
+          { id: 6, percentage: 15 },  // Grapes
+          { id: 7, percentage: 16 },  // Orange
+          { id: 8, percentage: 18 },  // Cherry
+          { id: 9, percentage: 18 },  // Lemon
+          { id: 10, percentage: 2 },  // Wild (very rare)
+          { id: 11, percentage: 2 }   // Scatter (very rare)
+        ]
+      },
+      // Reel 2
+      { 
+        id: 2, 
+        height: 3, 
+        visibleHeight: 3,
+        symbols: [
+          { id: 1, percentage: 4 },   // Diamond (rarer on middle reels)
+          { id: 2, percentage: 6 },   // Seven
+          { id: 3, percentage: 10 },  // Triple Bar
+          { id: 4, percentage: 13 },  // Bell
+          { id: 5, percentage: 15 },  // Watermelon
+          { id: 6, percentage: 16 },  // Grapes
+          { id: 7, percentage: 17 },  // Orange
+          { id: 8, percentage: 19 },  // Cherry
+          { id: 9, percentage: 19 },  // Lemon
+          { id: 10, percentage: 1 },  // Wild (very rare)
+          { id: 11, percentage: 2 }   // Scatter
+        ]
+      },
+      // Reel 3
+      { 
+        id: 3, 
+        height: 3, 
+        visibleHeight: 3,
+        symbols: [
+          { id: 1, percentage: 4 },   // Diamond
+          { id: 2, percentage: 5 },   // Seven
+          { id: 3, percentage: 8 },   // Triple Bar
+          { id: 4, percentage: 10 },  // Bell
+          { id: 5, percentage: 15 },  // Watermelon
+          { id: 6, percentage: 16 },  // Grapes
+          { id: 7, percentage: 17 },  // Orange
+          { id: 8, percentage: 19 },  // Cherry
+          { id: 9, percentage: 20 },  // Lemon
+          { id: 10, percentage: 1 },  // Wild
+          { id: 11, percentage: 3 }   // Scatter (more common on middle reel)
+        ]
+      },
+      // Reel 4
+      { 
+        id: 4, 
+        height: 3, 
+        visibleHeight: 3,
+        symbols: [
+          { id: 1, percentage: 3 },   // Diamond
+          { id: 2, percentage: 5 },   // Seven
+          { id: 3, percentage: 8 },   // Triple Bar
+          { id: 4, percentage: 10 },  // Bell
+          { id: 5, percentage: 15 },  // Watermelon
+          { id: 6, percentage: 16 },  // Grapes
+          { id: 7, percentage: 18 },  // Orange
+          { id: 8, percentage: 19 },  // Cherry
+          { id: 9, percentage: 20 },  // Lemon
+          { id: 10, percentage: 1 },  // Wild
+          { id: 11, percentage: 2 }   // Scatter
+        ] 
+      },
+      // Reel 5
+      { 
+        id: 5, 
+        height: 3, 
+        visibleHeight: 3,
+        symbols: [
+          { id: 1, percentage: 2 },   // Diamond (even rarer on last reel)
+          { id: 2, percentage: 3 },   // Seven
+          { id: 3, percentage: 6 },   // Triple Bar
+          { id: 4, percentage: 8 },   // Bell
+          { id: 5, percentage: 14 },  // Watermelon
+          { id: 6, percentage: 15 },  // Grapes
+          { id: 7, percentage: 17 },  // Orange
+          { id: 8, percentage: 21 },  // Cherry
+          { id: 9, percentage: 22 },  // Lemon
+          { id: 10, percentage: 1 },  // Wild
+          { id: 11, percentage: 2 }   // Scatter
+        ]
+      }
     ]
   });
   
@@ -90,7 +176,8 @@ const ReelMatrix = ({ onSave, initialConfig = null }) => {
   const addReel = () => {
     const newReel = {
       id: reelConfig.reels.length + 1,
-      height: 3,
+      height: 3, // total height for percentage
+      visibleHeight: 3, // visible window height
       symbols: []
     };
     
@@ -143,18 +230,174 @@ const ReelMatrix = ({ onSave, initialConfig = null }) => {
     });
   };
 
+  const switchToFixedConfig = () => {
+    const fixedConfig = {
+      selectionMethod: 'fixed',
+      reels: [
+        // Reel 1 - Fixed positions
+        {
+          id: 1,
+          height: 20,
+          visibleHeight: 3,
+          symbols: [
+            8, 5, 7, 9, 6, 4, 8, 7, 9, 3, 
+            8, 10, 7, 6, 5, 9, 2, 8, 9, 1
+          ]
+        },
+        // Reel 2
+        {
+          id: 2,
+          height: 20,
+          visibleHeight: 3,
+          symbols: [
+            9, 6, 8, 7, 5, 9, 4, 8, 6, 11, 
+            7, 9, 8, 3, 7, 6, 9, 2, 8, 5
+          ]
+        },
+        // Reel 3
+        {
+          id: 3,
+          height: 20,
+          visibleHeight: 3,
+          symbols: [
+            8, 7, 9, 6, 11, 8, 5, 7, 9, 4, 
+            8, 6, 9, 3, 7, 10, 8, 5, 9, 2
+          ]
+        },
+        // Reel 4
+        {
+          id: 4,
+          height: 20,
+          visibleHeight: 3,
+          symbols: [
+            9, 8, 7, 6, 9, 5, 8, 7, 6, 9, 
+            4, 8, 7, 3, 9, 6, 8, 2, 7, 9
+          ]
+        },
+        // Reel 5
+        {
+          id: 5,
+          height: 20,
+          visibleHeight: 3,
+          symbols: [
+            9, 8, 7, 9, 6, 8, 7, 9, 5, 8, 
+            7, 6, 9, 4, 8, 3, 9, 7, 2, 11
+          ]
+        }
+      ]
+    };
+    
+    setReelConfig(fixedConfig);
+  };
+
   const handleMethodChange = (event) => {
     const method = event.target.value;
-    const updatedReels = reelConfig.reels.map(reel => ({
-      ...reel,
-      symbols: method === 'fixed' ? Array(reel.height).fill(null) : []
-    }));
     
-    setReelConfig({
-      ...reelConfig,
-      selectionMethod: method,
-      reels: updatedReels
-    });
+    if (method === 'fixed') {
+      switchToFixedConfig();
+    } else {
+      // Load the default percentage-based configuration
+      setReelConfig({
+        selectionMethod: 'percentage',
+        reels: initialConfig?.reels || [
+          // Reel 1
+          { 
+            id: 1, 
+            height: 3, 
+            visibleHeight: 3, 
+            symbols: [
+              { id: 1, percentage: 5 },   // Diamond (rare)
+              { id: 2, percentage: 8 },   // Seven
+              { id: 3, percentage: 10 },  // Triple Bar
+              { id: 4, percentage: 12 },  // Bell
+              { id: 5, percentage: 14 },  // Watermelon
+              { id: 6, percentage: 15 },  // Grapes
+              { id: 7, percentage: 16 },  // Orange
+              { id: 8, percentage: 18 },  // Cherry
+              { id: 9, percentage: 18 },  // Lemon
+              { id: 10, percentage: 2 },  // Wild (very rare)
+              { id: 11, percentage: 2 }   // Scatter (very rare)
+            ]
+          },
+          // Reel 2
+          { 
+            id: 2, 
+            height: 3, 
+            visibleHeight: 3,
+            symbols: [
+              { id: 1, percentage: 4 },   // Diamond (rarer on middle reels)
+              { id: 2, percentage: 6 },   // Seven
+              { id: 3, percentage: 10 },  // Triple Bar
+              { id: 4, percentage: 13 },  // Bell
+              { id: 5, percentage: 15 },  // Watermelon
+              { id: 6, percentage: 16 },  // Grapes
+              { id: 7, percentage: 17 },  // Orange
+              { id: 8, percentage: 19 },  // Cherry
+              { id: 9, percentage: 19 },  // Lemon
+              { id: 10, percentage: 1 },  // Wild (very rare)
+              { id: 11, percentage: 2 }   // Scatter
+            ]
+          },
+          // Reel 3
+          { 
+            id: 3, 
+            height: 3, 
+            visibleHeight: 3,
+            symbols: [
+              { id: 1, percentage: 4 },   // Diamond
+              { id: 2, percentage: 5 },   // Seven
+              { id: 3, percentage: 8 },   // Triple Bar
+              { id: 4, percentage: 10 },  // Bell
+              { id: 5, percentage: 15 },  // Watermelon
+              { id: 6, percentage: 16 },  // Grapes
+              { id: 7, percentage: 17 },  // Orange
+              { id: 8, percentage: 19 },  // Cherry
+              { id: 9, percentage: 20 },  // Lemon
+              { id: 10, percentage: 1 },  // Wild
+              { id: 11, percentage: 3 }   // Scatter (more common on middle reel)
+            ]
+          },
+          // Reel 4
+          { 
+            id: 4, 
+            height: 3, 
+            visibleHeight: 3,
+            symbols: [
+              { id: 1, percentage: 3 },   // Diamond
+              { id: 2, percentage: 5 },   // Seven
+              { id: 3, percentage: 8 },   // Triple Bar
+              { id: 4, percentage: 10 },  // Bell
+              { id: 5, percentage: 15 },  // Watermelon
+              { id: 6, percentage: 16 },  // Grapes
+              { id: 7, percentage: 18 },  // Orange
+              { id: 8, percentage: 19 },  // Cherry
+              { id: 9, percentage: 20 },  // Lemon
+              { id: 10, percentage: 1 },  // Wild
+              { id: 11, percentage: 2 }   // Scatter
+            ] 
+          },
+          // Reel 5
+          { 
+            id: 5, 
+            height: 3, 
+            visibleHeight: 3,
+            symbols: [
+              { id: 1, percentage: 2 },   // Diamond (even rarer on last reel)
+              { id: 2, percentage: 3 },   // Seven
+              { id: 3, percentage: 6 },   // Triple Bar
+              { id: 4, percentage: 8 },   // Bell
+              { id: 5, percentage: 14 },  // Watermelon
+              { id: 6, percentage: 15 },  // Grapes
+              { id: 7, percentage: 17 },  // Orange
+              { id: 8, percentage: 21 },  // Cherry
+              { id: 9, percentage: 22 },  // Lemon
+              { id: 10, percentage: 1 },  // Wild
+              { id: 11, percentage: 2 }   // Scatter
+            ]
+          }
+        ]
+      });
+    }
   };
 
   const handleDragStart = (symbol) => {
@@ -229,6 +472,121 @@ const ReelMatrix = ({ onSave, initialConfig = null }) => {
   const handleTabChange = (event, newValue) => {
     setActiveTab(newValue);
   };
+
+  // Add a function to update the visible height
+  const updateVisibleHeight = (reelIndex, newHeight) => {
+    const updatedReels = [...reelConfig.reels];
+    newHeight = Math.max(1, newHeight);
+    
+    updatedReels[reelIndex] = {
+      ...updatedReels[reelIndex],
+      visibleHeight: newHeight
+    };
+    
+    setReelConfig({
+      ...reelConfig,
+      reels: updatedReels
+    });
+  };
+
+  // Add a function to add a new position to a fixed reel
+  const addFixedPosition = (reelIndex) => {
+    if (reelConfig.selectionMethod !== 'fixed') return;
+    
+    const updatedReels = [...reelConfig.reels];
+    const currentSymbols = updatedReels[reelIndex].symbols || [];
+    
+    updatedReels[reelIndex] = {
+      ...updatedReels[reelIndex],
+      symbols: [...currentSymbols, null],
+      height: (updatedReels[reelIndex].height || 0) + 1
+    };
+    
+    setReelConfig({
+      ...reelConfig,
+      reels: updatedReels
+    });
+  };
+
+  // Add a function to remove a position
+  const removeFixedPosition = (reelIndex, posIndex) => {
+    if (reelConfig.selectionMethod !== 'fixed') return;
+    
+    const updatedReels = [...reelConfig.reels];
+    const currentSymbols = [...updatedReels[reelIndex].symbols];
+    
+    if (currentSymbols.length <= updatedReels[reelIndex].visibleHeight) {
+      setSnackbar({
+        open: true,
+        message: 'Cannot remove more positions than visible height',
+        severity: 'error'
+      });
+      return;
+    }
+    
+    currentSymbols.splice(posIndex, 1);
+    
+    updatedReels[reelIndex] = {
+      ...updatedReels[reelIndex],
+      symbols: currentSymbols,
+      height: Math.max(updatedReels[reelIndex].visibleHeight, currentSymbols.length)
+    };
+    
+    setReelConfig({
+      ...reelConfig,
+      reels: updatedReels
+    });
+  };
+
+  // Add this function to the ReelMatrix component
+
+  const simulateSpin = () => {
+    // For visualization purposes only
+    const updatedReels = [...reelConfig.reels];
+    
+    updatedReels.forEach((reel, reelIndex) => {
+      if (reelConfig.selectionMethod === 'fixed') {
+        // For fixed reels, just rotate the positions randomly
+        const offset = Math.floor(Math.random() * reel.symbols.length);
+        const rotatedSymbols = [
+          ...reel.symbols.slice(offset), 
+          ...reel.symbols.slice(0, offset)
+        ];
+        
+        updatedReels[reelIndex] = {
+          ...reel,
+          visibleSymbols: rotatedSymbols.slice(0, reel.visibleHeight)
+        };
+      } else {
+        // For percentage-based, use weighted random selection
+        const visibleSymbols = [];
+        for (let i = 0; i < reel.visibleHeight; i++) {
+          const totalWeight = reel.symbols.reduce((sum, s) => sum + (s.percentage || 0), 0);
+          let randomValue = Math.random() * totalWeight;
+          let selectedSymbol = null;
+          
+          for (const symbol of reel.symbols) {
+            randomValue -= (symbol.percentage || 0);
+            if (randomValue <= 0) {
+              selectedSymbol = symbol.id;
+              break;
+            }
+          }
+          
+          // If somehow we didn't select anything, pick the first symbol
+          visibleSymbols.push(selectedSymbol || (reel.symbols[0]?.id || null));
+        }
+        
+        updatedReels[reelIndex] = {
+          ...reel,
+          visibleSymbols
+        };
+      }
+    });
+    
+    // Add a "Spin" button in the visualization tab that calls this function
+    // This is just for visual demonstration and doesn't affect the actual configuration
+  }
 
   return (
     <Card>
@@ -366,7 +724,6 @@ const ReelMatrix = ({ onSave, initialConfig = null }) => {
                         display: 'flex',
                         flexDirection: 'column',
                         minWidth: 120,
-                        border: '1px solid #e0e0e0',
                         borderRadius: 1
                       }}
                     >
@@ -377,19 +734,22 @@ const ReelMatrix = ({ onSave, initialConfig = null }) => {
                           justifyContent: 'space-between',
                           alignItems: 'center',
                           p: 1,
-                          borderBottom: '1px solid #e0e0e0',
-                          bgcolor: '#f5f5f5'
                         }}
                       >
                         <Typography>Reel {reel.id}</Typography>
-                        <TextField
-                          type="number"
-                          inputProps={{ min: 1, max: 10 }}
-                          value={reel.height}
-                          onChange={(e) => updateReelHeight(reelIndex, parseInt(e.target.value))}
-                          size="small"
-                          sx={{ width: 70 }}
-                        />
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                          <Tooltip title="Visible window height">
+                            <TextField
+                              type="number"
+                              inputProps={{ min: 1, max: 10 }}
+                              value={reel.visibleHeight}
+                              onChange={(e) => updateVisibleHeight(reelIndex, parseInt(e.target.value))}
+                              size="small"
+                              sx={{ width: 70 }}
+                              label="View"
+                            />
+                          </Tooltip>
+                        </Box>
                       </Box>
                       
                       {reelConfig.selectionMethod === 'fixed' ? (
@@ -402,8 +762,7 @@ const ReelMatrix = ({ onSave, initialConfig = null }) => {
                             gap: 1
                           }}
                         >
-                          {Array(reel.height).fill(null).map((_, posIndex) => {
-                            const symbolId = reel.symbols[posIndex];
+                          {(reel.symbols || []).map((symbolId, posIndex) => {
                             const symbol = symbols.find(s => s.id === symbolId);
                             
                             return (
@@ -418,7 +777,10 @@ const ReelMatrix = ({ onSave, initialConfig = null }) => {
                                   borderRadius: 1,
                                   display: 'flex',
                                   justifyContent: 'center',
-                                  alignItems: 'center'
+                                  alignItems: 'center',
+                                  position: 'relative',
+                                  // Highlight positions within the visible window
+                                  backgroundColor: posIndex < reel.visibleHeight ? 'rgba(124, 77, 255, 0.05)' : 'transparent',
                                 }}
                               >
                                 {symbol ? (
@@ -460,9 +822,72 @@ const ReelMatrix = ({ onSave, initialConfig = null }) => {
                                     Drag symbol here
                                   </Typography>
                                 )}
+                                
+                                {/* Position indicator and remove button */}
+                                <Box 
+                                  sx={{ 
+                                    position: 'absolute',
+                                    top: 2,
+                                    left: 2,
+                                    fontSize: '0.7rem',
+                                    color: 'text.disabled'
+                                  }}
+                                >
+                                  {posIndex + 1}
+                                </Box>
+                                
+                                <IconButton 
+                                  sx={{ 
+                                    position: 'absolute',
+                                    top: -8,
+                                    right: -8,
+                                    fontSize: '0.7rem',
+                                    color: 'error.main',
+                                    p: 0.5,
+                                    bgcolor: 'background.paper',
+                                    '&:hover': {
+                                      bgcolor: 'error.light',
+                                      color: 'white'
+                                    }
+                                  }}
+                                  onClick={() => removeFixedPosition(reelIndex, posIndex)}
+                                >
+                                  <MinusIcon fontSize="small" />
+                                </IconButton>
                               </Box>
                             );
                           })}
+                          
+                          {/* Add position button */}
+                          <Button 
+                            variant="outlined" 
+                            size="small"
+                            startIcon={<PlusIcon />}
+                            onClick={() => addFixedPosition(reelIndex)}
+                            sx={{ mt: 1 }}
+                          >
+                            Add Position
+                          </Button>
+                          
+                          {/* Visual indicator for visible window */}
+                          <Box sx={{ 
+                            mt: 2, 
+                            p: 1, 
+                            borderRadius: 1, 
+                            bgcolor: 'background.paper',
+                            border: '1px dashed',
+                            borderColor: 'primary.main',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: 1
+                          }}>
+                            <Typography variant="caption">
+                              Visible window: {reel.visibleHeight} positions
+                            </Typography>
+                            <Tooltip title="Positions highlighted in purple will be visible in the game window">
+                              <HelpIcon fontSize="small" color="primary" />
+                            </Tooltip>
+                          </Box>
                         </Box>
                       ) : (
                         <Box 
@@ -560,15 +985,31 @@ const ReelMatrix = ({ onSave, initialConfig = null }) => {
                     gap: 1
                   }}
                 >
-                  {Array(reel.height).fill(null).map((_, posIndex) => {
+                  {/* Show only visibleHeight positions */}
+                  {Array(reel.visibleHeight).fill(null).map((_, posIndex) => {
                     let displaySymbol;
                     
                     if (reelConfig.selectionMethod === 'fixed') {
-                      const symbolId = reel.symbols[posIndex];
+                      // For fixed, pick from the symbols array, potentially wrapping if needed
+                      const symbolId = reel.symbols[posIndex % Math.max(1, reel.symbols.length)];
                       displaySymbol = symbols.find(s => s.id === symbolId);
                     } else {
-                      const randomIndex = Math.floor(Math.random() * symbols.length);
-                      displaySymbol = symbols[randomIndex];
+                      // For percentage, use weighted random selection
+                      const totalWeight = reel.symbols.reduce((sum, s) => sum + (s.percentage || 0), 0);
+                      let randomValue = Math.random() * totalWeight;
+                      
+                      for (const symbol of reel.symbols) {
+                        randomValue -= (symbol.percentage || 0);
+                        if (randomValue <= 0) {
+                          displaySymbol = symbols.find(s => s.id === symbol.id);
+                          break;
+                        }
+                      }
+                      
+                      // Fallback
+                      if (!displaySymbol && symbols.length > 0) {
+                        displaySymbol = symbols[0];
+                      }
                     }
                     
                     return (
@@ -578,12 +1019,13 @@ const ReelMatrix = ({ onSave, initialConfig = null }) => {
                         sx={{
                           width: 80,
                           height: 60,
-                          backgroundColor: displaySymbol ? displaySymbol.color : '#f0f0f0',
+                          backgroundColor: displaySymbol ? displaySymbol.color : '#1A1A1A',
                           color: '#fff',
                           display: 'flex',
                           justifyContent: 'center',
                           alignItems: 'center',
-                          borderRadius: 1
+                          borderRadius: 1,
+                          boxShadow: '0 2px 4px rgba(0,0,0,0.3) inset'
                         }}
                       >
                         {displaySymbol ? displaySymbol.name : 'Empty'}
@@ -593,8 +1035,15 @@ const ReelMatrix = ({ onSave, initialConfig = null }) => {
                 </Box>
               ))}
             </Paper>
-            <Box className="visualization-controls">
-              <Button variant="contained" onClick={() => setActiveTab(0)}>
+            <Box className="visualization-controls" sx={{ display: 'flex', gap: 2 }}>
+              <Button 
+                variant="contained" 
+                color="primary"
+                onClick={() => window.location.reload()} // Simple way to "spin" - just refresh the visualization
+              >
+                Spin
+              </Button>
+              <Button variant="outlined" onClick={() => setActiveTab(0)}>
                 Back to Editor
               </Button>
             </Box>

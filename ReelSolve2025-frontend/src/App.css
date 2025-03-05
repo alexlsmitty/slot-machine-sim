@@ -1,0 +1,377 @@
+/* Modern Casino Game Development UI - Dark Theme 2.0 */
+
+:root {
+  /* Updated color palette for darker theme */
+  --background-primary: #080808;    /* Even darker background */
+  --background-secondary: #111111;   /* Darker secondary */
+  --background-tertiary: #181818;    /* Darker tertiary */
+  --background-elevated: #202020;
+  
+  /* Text colors */
+  --text-primary: #FFFFFF;
+  --text-secondary: #A1A7B6;
+  --text-disabled: #666D80;
+  
+  /* Updated accent colors */
+  --accent-primary: #7C4DFF;     /* Vibrant purple */
+  --accent-secondary: #00E5FF;   /* Neon blue */
+  --accent-tertiary: #FF4D8C;    /* Neon pink */
+  --accent-quaternary: #FFD700;  /* Casino gold */
+  
+  /* Gradient accents */
+  --gradient-primary: linear-gradient(135deg, #7C4DFF 0%, #00E5FF 100%);
+  --gradient-secondary: linear-gradient(135deg, #FF4D8C 0%, #FFD700 100%);
+  
+  /* Status colors */
+  --success: #00E676;
+  --warning: #FFB300;
+  --error: #FF1744;
+  --info: #00B0FF;
+  
+  /* Updated shadows */
+  --shadow-soft: 0 4px 6px rgba(0, 0, 0, 0.1);
+  --shadow-medium: 0 8px 16px rgba(0, 0, 0, 0.15);
+  --shadow-hard: 0 12px 24px rgba(0, 0, 0, 0.2);
+  --shadow-glow: 0 0 20px rgba(124, 77, 255, 0.3);
+  
+  /* Font stacks */
+  --font-primary: 'Space Grotesk', system-ui, -apple-system, sans-serif;
+  --font-secondary: 'Outfit', system-ui, -apple-system, sans-serif;
+  --font-display: 'Poppins', system-ui, -apple-system, sans-serif;
+  
+  /* Border radius */
+  --border-radius-sm: 6px;
+  --border-radius-md: 12px;
+  --border-radius-lg: 16px;
+  --border-radius-xl: 24px;
+}
+
+/* Add this at the top of your App.css */
+html, body {
+  background-color: var(--background-primary);
+  min-height: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+#root {
+  min-height: 100vh;
+  background-color: var(--background-primary);
+}
+
+/* Global styles */
+body {
+  background-color: var(--background-primary);
+  color: var(--text-primary);
+  font-family: var(--font-primary);
+  margin: 0;
+  padding: 0;
+  line-height: 1.6;
+}
+
+/* Typography */
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-display);
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  color: var(--text-primary);
+}
+
+/* Updated MUI overrides */
+.MuiPaper-root {
+  background-color: var(--background-secondary) !important;
+  background: var(--background-secondary) !important;
+  border: 1px solid rgba(255, 255, 255, 0.05) !important;
+  backdrop-filter: blur(12px) !important;
+  color: var(--text-primary) !important;
+}
+
+.MuiButton-root {
+  font-family: var(--font-primary) !important;
+  font-weight: 600 !important;
+  letter-spacing: 0.5px !important;
+  text-transform: none !important;
+  padding: 8px 24px !important;
+  border-radius: 24px !important; /* More pronounced pill shape */
+  font-size: 0.95rem !important; /* Slightly larger text */
+  transition: all 0.2s ease !important;
+}
+
+.MuiButton-contained {
+  background: var(--gradient-primary) !important;
+  box-shadow: var(--shadow-glow) !important;
+  transition: all 0.3s ease !important;
+}
+
+.MuiButton-contained:hover {
+  transform: translateY(-2px) !important;
+  box-shadow: var(--shadow-glow), 0 8px 16px rgba(124, 77, 255, 0.4) !important;
+}
+
+/* Card styling */
+.MuiCard-root {
+  background: var(--background-secondary) !important;
+  border: 1px solid rgba(255, 255, 255, 0.05) !important;
+  backdrop-filter: blur(12px) !important;
+}
+
+.MuiCardHeader-root {
+  background: var(--background-tertiary) !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05) !important;
+}
+
+/* Input fields */
+.MuiOutlinedInput-root {
+  background: var(--background-tertiary) !important;
+  border-radius: var(--border-radius-md) !important;
+}
+
+.MuiOutlinedInput-notchedOutline {
+  border-color: rgba(255, 255, 255, 0.1) !important;
+}
+
+/* Tabs */
+.MuiTabs-root {
+  background: transparent !important;
+}
+
+.MuiTab-root {
+  font-family: var(--font-primary) !important;
+  font-weight: 500 !important;
+  text-transform: none !important;
+  min-width: 120px !important;
+}
+
+.MuiTab-root.Mui-selected {
+  color: var(--accent-secondary) !important;
+}
+
+/* Tables */
+.MuiTableHead-root {
+  background: var(--background-tertiary) !important;
+}
+
+.MuiTableRow-root:hover {
+  background: rgba(124, 77, 255, 0.05) !important;
+}
+
+/* Dialog */
+.MuiDialog-paper {
+  background-color: var(--background-elevated) !important;
+  background: var(--background-elevated) !important;
+  backdrop-filter: blur(20px) !important;
+  border: 1px solid rgba(255, 255, 255, 0.05) !important;
+}
+
+/* Custom casino elements */
+.game-preview {
+  background: var(--background-elevated);
+  border: 2px solid transparent;
+  background-clip: padding-box;
+  position: relative;
+}
+
+.game-preview::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  z-index: -1;
+  margin: -2px;
+  border-radius: inherit;
+  background: var(--gradient-primary);
+}
+
+/* Updated animations */
+@keyframes glow {
+  0% { box-shadow: 0 0 5px rgba(124, 77, 255, 0.2); }
+  50% { box-shadow: 0 0 20px rgba(124, 77, 255, 0.4); }
+  100% { box-shadow: 0 0 5px rgba(124, 77, 255, 0.2); }
+}
+
+.glow-effect {
+  animation: glow 2s infinite;
+}
+
+/* Scrollbar styling */
+::-webkit-scrollbar {
+  width: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--background-primary);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--background-tertiary);
+  border-radius: 5px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--accent-primary);
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+  :root {
+    --border-radius-lg: 12px;
+    --border-radius-xl: 16px;
+  }
+  
+  .MuiDialog-paper {
+    margin: 16px !important;
+    width: calc(100% - 32px) !important;
+    max-height: calc(100% - 32px) !important;
+  }
+}
+
+.MuiDrawer-paper {
+  background-color: var(--background-tertiary) !important;
+  border-right: 1px solid rgba(255, 255, 255, 0.05) !important;
+  width: 280px !important; /* Increased from 240px */
+}
+
+.nav-toggle-button {
+  background: var(--gradient-primary) !important;
+  color: white !important;
+  border-radius: 0 24px 24px 0 !important;
+  padding: 12px 8px 12px 4px !important;
+  box-shadow: var(--shadow-glow) !important;
+  transition: all 0.3s ease !important;
+}
+
+.nav-toggle-button:hover {
+  transform: translateX(4px) !important;
+  box-shadow: var(--shadow-glow), 0 8px 16px rgba(124, 77, 255, 0.4) !important;
+}
+
+/* Update drawer list items styling */
+.MuiListItemButton-root {
+  margin: 4px 8px !important;
+  border-radius: var(--border-radius-md) !important;
+  transition: all 0.2s ease !important;
+}
+
+.MuiListItemButton-root:hover {
+  background-color: rgba(124, 77, 255, 0.08) !important;
+}
+
+.MuiListItemButton-root.Mui-selected {
+  background: var(--gradient-primary) !important;
+}
+
+.MuiListItemButton-root.Mui-selected .MuiListItemIcon-root,
+.MuiListItemButton-root.Mui-selected .MuiListItemText-primary {
+  color: white !important;
+}
+
+/* Add specific overrides for TableContainer */
+.MuiTableContainer-root {
+  background-color: var(--background-secondary) !important;
+}
+
+/* Fix for button groups and other interactive elements */
+.MuiToggleButtonGroup-root {
+  background-color: transparent !important;
+}
+
+.MuiToggleButton-root {
+  background-color: var(--background-tertiary) !important;
+  color: var(--text-primary) !important;
+  border-color: rgba(255, 255, 255, 0.1) !important;
+  min-width: 100px !important;
+  border-radius: 24px !important;
+  margin: 0 4px !important;
+  padding: 8px 16px !important;
+  font-size: 0.95rem !important;
+}
+
+.MuiToggleButton-root.Mui-selected {
+  background: var(--gradient-primary) !important;
+  color: white !important;
+}
+
+/* Improve button group spacing */
+.MuiButtonGroup-root {
+  gap: 6px !important;
+}
+
+.MuiButtonGroup-root .MuiButtonGroup-grouped {
+  margin-left: 4px !important;
+  margin-right: 4px !important;
+  border-radius: 24px !important; /* Pill-like shape */
+  min-width: 90px !important;
+}
+
+/* Fix visual pattern display in payline editor */
+.MuiPaper-root[sx*="bgcolor: 'grey.100'"] {
+  background-color: var(--background-tertiary) !important;
+}
+
+/* Fix visual pattern display cells */
+[sx*="bgcolor: 'white'"] {
+  background-color: var(--background-secondary) !important;
+  color: var(--text-primary) !important;
+}
+
+[sx*="bgcolor: currentPayline.pattern"],
+[sx*="bgcolor: 'primary.main'"] {
+  color: white !important;
+}
+
+/* Fix rule box in ruleset manager */
+.rule-box {
+  background-color: var(--background-tertiary) !important;
+  border: 1px solid rgba(255, 255, 255, 0.05) !important;
+}
+
+/* Additional refinements */
+.MuiIconButton-root {
+  border-radius: 50% !important;
+  padding: 8px !important;
+}
+
+.MuiTextField-root {
+  margin-bottom: 8px !important;
+}
+
+/* Fixes for dialog buttons */
+.MuiDialogActions-root .MuiButton-root {
+  min-width: 100px !important;
+}
+
+/* Make alerts stand out better */
+.MuiAlert-root {
+  background-color: var(--background-elevated) !important;
+  border-left: 4px solid var(--info) !important;
+}
+
+.MuiAlert-root.MuiAlert-standardInfo {
+  border-left-color: var(--info) !important;
+}
+
+.MuiAlert-root.MuiAlert-standardSuccess {
+  border-left-color: var(--success) !important;
+}
+
+.MuiAlert-root.MuiAlert-standardWarning {
+  border-left-color: var(--warning) !important;
+}
+
+.MuiAlert-root.MuiAlert-standardError {
+  border-left-color: var(--error) !important;
+}
+
+/* Replace the overly broad .MuiBox-root rule with more specific selectors */
+
+/* Remove this problematic rule */
+/* And replace with these more targeted selectors */
+#root > .MuiBox-root {
+  background-color: var(--background-primary);
+}
+
+main.MuiBox-root {
+  background-color: var(--background-primary);
+}

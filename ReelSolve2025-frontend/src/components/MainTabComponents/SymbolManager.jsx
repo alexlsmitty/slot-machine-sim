@@ -1,29 +1,94 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   Box, Button, TextField, Dialog, DialogActions, DialogContent, 
   DialogTitle, Paper, Table, TableBody, TableCell, TableContainer, 
   TableHead, TableRow, IconButton, Typography, Grid2, Tabs, Tab, 
-  Slider, FormControl, InputLabel, Select, MenuItem 
+  Slider, FormControl, InputLabel, Select, MenuItem, Alert
 } from '@mui/material';
 import { Delete, Edit, Add, ColorLens } from '@mui/icons-material';
-import { useSymbolLibrary } from './SymbolLibraryContext'; // Adjust the path as needed
+import { useSymbolLibrary } from './SymbolLibraryContext';
+import SectionHeader from '../sectionHeader';
 
 const SymbolManager = () => {
   const { symbols, setSymbols } = useSymbolLibrary();
   const [currentSymbol, setCurrentSymbol] = useState(null);
   const [open, setOpen] = useState(false);
   const [tabValue, setTabValue] = useState(0);
+  const [paylineType, setPaylineType] = useState('standard');
+  const [reelCount, setReelCount] = useState(5);
+  const [clusterSizes, setClusterSizes] = useState([6, 7, 8, 9, 10]);
+  const [minClusterSize, setMinClusterSize] = useState(6);
+
+  useEffect(() => {
+    // Load both payline config AND reel config to get proper context
+    if (window.api) {
+      if (window.api.getPaylineConfig) {
+        window.api.getPaylineConfig().then(config => {
+          if (config) {
+            if (config.paylineType) {
+              setPaylineType(config.paylineType);
+            }
+            if (config.reelCount) {
+              setReelCount(config.reelCount);
+            }
+            if (config.minClusterSize) {
+              setMinClusterSize(config.minClusterSize);
+              
+              // Generate cluster sizes dynamically
+              if (config.maxClusterSize) {
+                const sizes = [];
+                for (let i = config.minClusterSize; i <= config.maxClusterSize; i++) {
+                  sizes.push(i);
+                }
+                setClusterSizes(sizes);
+              } else {
+                // Fallback to default range
+                const sizes = [];
+                for (let i = 0; i < 5; i++) {
+                  sizes.push(config.minClusterSize + i);
+                }
+                setClusterSizes(sizes);
+              }
+            }
+          }
+        });
+      }
+      
+      if (window.api.getReelConfig) {
+        window.api.getReelConfig().then(config => {
+          if (config && config.reels) {
+            setReelCount(config.reels.length);
+          }
+        });
+      }
+    }
+  }, []);
 
   const handleOpen = (symbol = null) => {
     if (symbol) {
       setCurrentSymbol({ ...symbol });
     } else {
+      // Initialize with payouts based on current context
+      const initialPayouts = {};
+      
+      if (paylineType === 'clusters') {
+        // For clusters, initialize payouts for different cluster sizes
+        clusterSizes.forEach(size => {
+          initialPayouts[size] = 0;
+        });
+      } else {
+        // For standard paylines or ways, initialize based on reel count (3 to reelCount)
+        for (let i = 3; i <= reelCount; i++) {
+          initialPayouts[i] = 0;
+        }
+      }
+      
       setCurrentSymbol({
         id: symbols.length ? Math.max(...symbols.map(s => s.id)) + 1 : 1,
         name: '',
         image: '',
-        color: '#1976D2',
-        payouts: { 3: 0, 4: 0, 5: 0 },
+        color: '#7C4DFF',
+        payouts: initialPayouts,
         isWild: false,
         isScatter: false
       });
@@ -48,20 +113,29 @@ const SymbolManager = () => {
       updatedSymbols = [...symbols, currentSymbol];
     }
     setSymbols(updatedSymbols);
-    // Optionally: window.api.saveSymbolConfig(updatedSymbols);
+    
+    // Save to persistence
+    if (window.api && window.api.saveSymbolConfig) {
+      window.api.saveSymbolConfig(updatedSymbols);
+    }
+    
     handleClose();
   };
 
   const handleDelete = (id) => {
     const updated = symbols.filter(s => s.id !== id);
     setSymbols(updated);
-    // Optionally: window.api.saveSymbolConfig(updated);
+    
+    // Save to persistence
+    if (window.api && window.api.saveSymbolConfig) {
+      window.api.saveSymbolConfig(updated);
+    }
   };
 
-  const handlePayoutChange = (length, value) => {
+  const handlePayoutChange = (size, value) => {
     setCurrentSymbol({
       ...currentSymbol,
-      payouts: { ...currentSymbol.payouts, [length]: parseInt(value) }
+      payouts: { ...currentSymbol.payouts, [size]: parseInt(value) }
     });
   };
 
@@ -85,14 +159,112 @@ const SymbolManager = () => {
     </Box>
   );
 
+  // Function to render payouts based on context
+  const renderPayoutConfig = () => {
+    if (!currentSymbol) return null;
+    
+    // Determine what payout entries to render based on paylineType
+    let payoutEntries = [];
+    
+    if (paylineType === 'clusters') {
+      // For clusters, show payout entries based on clusterSizes
+      payoutEntries = clusterSizes.map(size => ({
+        size,
+        label: `${size} in Cluster`,
+        value: currentSymbol.payouts[size] || 0,
+        max: size * 100, // Higher max values for larger clusters
+        step: size < 8 ? 5 : 10
+      }));
+    } else {
+      // For standard or ways, show entries from 3 to reelCount
+      payoutEntries = Array.from({ length: reelCount - 2 }, (_, i) => {
+        const size = i + 3; // Starting from 3
+        return {
+          size,
+          label: `${size} of a Kind`,
+          value: currentSymbol.payouts[size] || 0,
+          max: size * 100,
+          step: size < 5 ? 1 : 5
+        };
+      });
+    }
+
+    return (
+      <Box sx={{ mt: 2 }}>
+        <Typography variant="h6" gutterBottom>
+          {paylineType === 'clusters' ? 'Cluster Payouts' : 'Line Payouts'}
+        </Typography>
+        
+        {paylineType === 'clusters' && (
+          <Alert severity="info" sx={{ mb: 2 }}>
+            Configure payouts for different cluster sizes. A cluster consists of adjacent matching symbols.
+          </Alert>
+        )}
+        
+        {payoutEntries.map(entry => (
+          <Box sx={{ mb: 4 }} key={entry.size}>
+            <Typography gutterBottom>{entry.label}</Typography>
+            <Grid2 container spacing={2} alignItems="center">
+              <Grid2 item xs>
+                <Slider
+                  value={entry.value}
+                  min={0}
+                  max={entry.max}
+                  step={entry.step}
+                  onChange={(e, val) => handlePayoutChange(entry.size, val)}
+                  sx={{
+                    color: paylineType === 'clusters' 
+                      ? 'var(--accent-tertiary)' 
+                      : 'var(--accent-primary)'
+                  }}
+                />
+              </Grid2>
+              <Grid2 item>
+                <TextField
+                  value={entry.value}
+                  onChange={(e) => handlePayoutChange(entry.size, e.target.value)}
+                  type="number"
+                  inputProps={{ min: 0, max: entry.max * 10 }}
+                  sx={{ width: 80 }}
+                />
+              </Grid2>
+            </Grid2>
+          </Box>
+        ))}
+      </Box>
+    );
+  };
+
+  // Format payouts for display in the table
+  const formatPayouts = (symbol) => {
+    if (paylineType === 'clusters') {
+      // For clusters, show the min, middle, and max cluster sizes
+      const clusterPayouts = clusterSizes.map(size => symbol.payouts[size] || 0);
+      return clusterPayouts.join('x / ');
+    } else {
+      // For standard/ways, show 3 to reelCount payouts
+      const linePayouts = [];
+      for (let i = 3; i <= reelCount; i++) {
+        linePayouts.push(symbol.payouts[i] || 0);
+      }
+      return linePayouts.join('x / ');
+    }
+  };
+
   return (
     <Box sx={{ p: 3 }}>
-      <Box display="flex" justifyContent="space-between" alignItems="center" mb={3}>
-        <Typography variant="h4">Symbol Manager</Typography>
-        <Button variant="contained" startIcon={<Add />} onClick={() => handleOpen()}>
-          Add New Symbol
-        </Button>
-      </Box>
+      <SectionHeader 
+        title="Symbol Manager"
+        action={
+          <Button 
+            variant="contained" 
+            startIcon={<Add />} 
+            onClick={() => handleOpen()}
+          >
+            Add New Symbol
+          </Button>
+        }
+      />
 
       <TableContainer component={Paper}>
         <Table>
@@ -100,7 +272,11 @@ const SymbolManager = () => {
             <TableRow>
               <TableCell>Preview</TableCell>
               <TableCell>Name</TableCell>
-              <TableCell>Payouts (3/4/5)</TableCell>
+              <TableCell>
+                {paylineType === 'clusters' 
+                  ? `Payouts (${clusterSizes.join('/')} in cluster)` 
+                  : `Payouts (${Array.from({length: reelCount-2}, (_, i) => i+3).join('/')} of a kind)`}
+              </TableCell>
               <TableCell>Special</TableCell>
               <TableCell>Actions</TableCell>
             </TableRow>
@@ -112,9 +288,7 @@ const SymbolManager = () => {
                   <SymbolPreview symbol={symbol} />
                 </TableCell>
                 <TableCell>{symbol.name}</TableCell>
-                <TableCell>
-                  {symbol.payouts[3]}x / {symbol.payouts[4]}x / {symbol.payouts[5]}x
-                </TableCell>
+                <TableCell>{formatPayouts(symbol)}</TableCell>
                 <TableCell>
                   {symbol.isWild ? 'Wild ' : ''}
                   {symbol.isScatter ? 'Scatter' : ''}
@@ -185,83 +359,7 @@ const SymbolManager = () => {
             </Box>
           )}
           
-          {tabValue === 1 && currentSymbol && (
-            <Box sx={{ mt: 2 }}>
-              <Typography variant="h6" gutterBottom>Payout Multipliers</Typography>
-              
-              <Box sx={{ mb: 4 }}>
-                <Typography gutterBottom>3 of a Kind</Typography>
-                <Grid2 container spacing={2} alignItems="center">
-                  <Grid2 item xs>
-                    <Slider
-                      value={currentSymbol.payouts[3]}
-                      min={0}
-                      max={100}
-                      step={1}
-                      onChange={(e, val) => handlePayoutChange(3, val)}
-                    />
-                  </Grid2>
-                  <Grid2 item>
-                    <TextField
-                      value={currentSymbol.payouts[3]}
-                      onChange={(e) => handlePayoutChange(3, e.target.value)}
-                      type="number"
-                      inputProps={{ min: 0, max: 1000 }}
-                      sx={{ width: 80 }}
-                    />
-                  </Grid2>
-                </Grid2>
-              </Box>
-              
-              <Box sx={{ mb: 4 }}>
-                <Typography gutterBottom>4 of a Kind</Typography>
-                <Grid2 container spacing={2} alignItems="center">
-                  <Grid2 item xs>
-                    <Slider
-                      value={currentSymbol.payouts[4]}
-                      min={0}
-                      max={200}
-                      step={1}
-                      onChange={(e, val) => handlePayoutChange(4, val)}
-                    />
-                  </Grid2>
-                  <Grid2 item>
-                    <TextField
-                      value={currentSymbol.payouts[4]}
-                      onChange={(e) => handlePayoutChange(4, e.target.value)}
-                      type="number"
-                      inputProps={{ min: 0, max: 1000 }}
-                      sx={{ width: 80 }}
-                    />
-                  </Grid2>
-                </Grid2>
-              </Box>
-              
-              <Box sx={{ mb: 2 }}>
-                <Typography gutterBottom>5 of a Kind</Typography>
-                <Grid2 container spacing={2} alignItems="center">
-                  <Grid2 item xs>
-                    <Slider
-                      value={currentSymbol.payouts[5]}
-                      min={0}
-                      max={500}
-                      step={5}
-                      onChange={(e, val) => handlePayoutChange(5, val)}
-                    />
-                  </Grid2>
-                  <Grid2 item>
-                    <TextField
-                      value={currentSymbol.payouts[5]}
-                      onChange={(e) => handlePayoutChange(5, e.target.value)}
-                      type="number"
-                      inputProps={{ min: 0, max: 5000 }}
-                      sx={{ width: 80 }}
-                    />
-                  </Grid2>
-                </Grid2>
-              </Box>
-            </Box>
-          )}
+          {tabValue === 1 && currentSymbol && renderPayoutConfig()}
           
           {tabValue === 2 && currentSymbol && (
             <Box sx={{ mt: 2 }}>
@@ -294,7 +392,7 @@ const SymbolManager = () => {
                   </FormControl>
                   
                   {(currentSymbol.isWild || currentSymbol.isScatter) && (
-                    <Box sx={{ mt: 3, p: 2, border: '1px solid #e0e0e0', borderRadius: 1 }}>
+                    <Box sx={{ mt: 3, p: 2, borderRadius: 1, border: '1px solid rgba(255, 255, 255, 0.1)', bgcolor: 'var(--background-tertiary)' }}>
                       <Typography variant="subtitle1" gutterBottom>
                         Special Behavior Notes:
                       </Typography>

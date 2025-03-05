@@ -1,68 +1,565 @@
-:root {
-  font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
+/* Casino Game Development UI - Modern Dark Theme
+ * 
+ * A professional dark theme with strategic color highlights
+ * for a React + Material-UI application
+ */
+
+ :root {
+  /* Main color palette */
+  --background-primary: #080808;
+  --background-secondary: #111111;
+  --background-tertiary: #181818;
+  --text-primary: #f5f5f5;
+  --text-secondary: #b0b0b0;
+  --text-disabled: #6c6c6c;
+  
+  /* Accent colors for highlights */
+  --accent-primary: #7e57c2;    /* Purple */
+  --accent-secondary: #26a69a;  /* Teal */
+  --accent-tertiary: #ec407a;   /* Pink */
+  --accent-quaternary: #ffb300; /* Amber */
+  
+  /* Status colors */
+  --success: #66bb6a;
+  --warning: #ffa726;
+  --error: #ef5350;
+  --info: #29b6f6;
+  
+  /* Shadow effects */
+  --shadow-soft: 0 4px 6px rgba(0, 0, 0, 0.1);
+  --shadow-medium: 0 6px 10px rgba(0, 0, 0, 0.15);
+  --shadow-hard: 0 8px 16px rgba(0, 0, 0, 0.2);
+  
+  /* Animation speeds */
+  --transition-fast: 0.2s;
+  --transition-medium: 0.3s;
+  --transition-slow: 0.5s;
+  
+  /* Border radius */
+  --border-radius-sm: 4px;
+  --border-radius-md: 8px;
+  --border-radius-lg: 12px;
+}
+
+/* Global resets and base styles */
+body {
+  background-color: var(--background-primary);
+  color: var(--text-primary);
+  font-family: 'Roboto', 'Segoe UI', sans-serif;
+  margin: 0;
+  padding: 0;
+  transition: background-color var(--transition-medium) ease;
   line-height: 1.5;
-  font-weight: 400;
+}
 
-  color-scheme: light dark;
-  color: rgba(255, 255, 255, 0.87);
-  background-color: #242424;
-
-  font-synthesis: none;
-  text-rendering: optimizeLegibility;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+/* Typography overrides */
+h1, h2, h3, h4, h5, h6 {
+  margin-top: 0;
+  color: var(--text-primary);
+  font-weight: 500;
 }
 
 a {
-  font-weight: 500;
-  color: #646cff;
-  text-decoration: inherit;
+  color: var(--accent-primary);
+  text-decoration: none;
+  transition: color var(--transition-fast) ease;
 }
+
 a:hover {
-  color: #535bf2;
+  color: var(--accent-tertiary);
+  text-decoration: underline;
 }
 
-body {
-  margin: 0;
-  display: flex;
-  place-items: center;
-  min-width: 320px;
-  min-height: 100vh;
+code {
+  font-family: 'Roboto Mono', monospace;
+  background-color: var(--background-tertiary);
+  padding: 2px 5px;
+  border-radius: var(--border-radius-sm);
+  font-size: 0.9em;
 }
 
-h1 {
-  font-size: 3.2em;
-  line-height: 1.1;
+/* Material-UI overrides */
+
+/* MUI Paper component */
+.MuiPaper-root {
+  background-color: var(--background-secondary) !important;
+  color: var(--text-primary) !important;
+  box-shadow: var(--shadow-medium) !important;
+  border-radius: var(--border-radius-md) !important;
+  transition: box-shadow var(--transition-fast) ease, transform var(--transition-fast) ease !important;
 }
 
-button {
-  border-radius: 8px;
-  border: 1px solid transparent;
-  padding: 0.6em 1.2em;
-  font-size: 1em;
-  font-weight: 500;
-  font-family: inherit;
+.MuiPaper-root:hover {
+  box-shadow: var(--shadow-hard) !important;
+}
+
+/* MUI AppBar */
+.MuiAppBar-root {
+  background-color: var(--background-tertiary) !important;
+  box-shadow: var(--shadow-medium) !important;
+}
+
+/* MUI Buttons */
+.MuiButton-root {
+  border-radius: var(--border-radius-md) !important;
+  text-transform: none !important;
+  font-weight: 500 !important;
+  transition: background-color var(--transition-fast) ease, 
+              transform var(--transition-fast) ease,
+              box-shadow var(--transition-fast) ease !important;
+}
+
+.MuiButton-root:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-medium);
+}
+
+.MuiButton-contained {
+  background-color: var(--accent-primary) !important;
+  color: white !important;
+}
+
+.MuiButton-contained:hover {
+  background-color: var(--accent-tertiary) !important;
+}
+
+.MuiButton-outlined {
+  border-color: var(--accent-primary) !important;
+  color: var(--accent-primary) !important;
+}
+
+.MuiButton-outlined:hover {
+  border-color: var(--accent-tertiary) !important;
+  color: var(--accent-tertiary) !important;
+}
+
+.MuiButton-text {
+  color: var(--accent-primary) !important;
+}
+
+.MuiButton-text:hover {
+  color: var(--accent-tertiary) !important;
+  background-color: rgba(126, 87, 194, 0.08) !important;
+}
+
+/* MUI Icons */
+.MuiSvgIcon-root {
+  color: var(--text-secondary) !important;
+  transition: color var(--transition-fast) ease !important;
+}
+
+.MuiSvgIcon-root:hover {
+  color: var(--text-primary) !important;
+}
+
+/* MUI Input fields */
+.MuiOutlinedInput-root {
+  background-color: var(--background-tertiary) !important;
+  border-radius: var(--border-radius-md) !important;
+}
+
+.MuiOutlinedInput-notchedOutline {
+  border-color: var(--text-disabled) !important;
+  transition: border-color var(--transition-fast) ease !important;
+}
+
+.MuiOutlinedInput-root:hover .MuiOutlinedInput-notchedOutline {
+  border-color: var(--text-secondary) !important;
+}
+
+.MuiOutlinedInput-root.Mui-focused .MuiOutlinedInput-notchedOutline {
+  border-color: var(--accent-primary) !important;
+  border-width: 2px !important;
+}
+
+.MuiInputLabel-root {
+  color: var(--text-secondary) !important;
+}
+
+.MuiInputLabel-root.Mui-focused {
+  color: var(--accent-primary) !important;
+}
+
+.MuiInputBase-input {
+  color: var(--text-primary) !important;
+}
+
+/* MUI Select */
+.MuiSelect-root {
+  background-color: var(--background-tertiary) !important;
+}
+
+.MuiMenuItem-root {
+  color: var(--text-primary) !important;
+}
+
+.MuiMenuItem-root:hover {
+  background-color: rgba(126, 87, 194, 0.08) !important;
+}
+
+.MuiMenuItem-root.Mui-selected {
+  background-color: rgba(126, 87, 194, 0.16) !important;
+}
+
+/* MUI Tabs */
+.MuiTabs-root {
+  background-color: var(--background-secondary) !important;
+}
+
+.MuiTab-root {
+  color: var(--text-secondary) !important;
+  text-transform: none !important;
+  font-weight: 500 !important;
+  transition: color var(--transition-fast) ease !important;
+}
+
+.MuiTab-root.Mui-selected {
+  color: var(--accent-primary) !important;
+}
+
+.MuiTabs-indicator {
+  background-color: var(--accent-primary) !important;
+}
+
+/* MUI Dialog */
+.MuiDialog-paper {
+  background-color: var(--background-secondary) !important;
+  color: var(--text-primary) !important;
+  border-radius: var(--border-radius-lg) !important;
+}
+
+.MuiDialogTitle-root {
+  background-color: var(--background-tertiary) !important;
+  padding: 16px 24px !important;
+}
+
+/* MUI Card */
+.MuiCard-root {
+  background-color: var(--background-secondary) !important;
+  border-radius: var(--border-radius-md) !important;
+  overflow: hidden !important;
+  transition: transform var(--transition-medium) ease, 
+              box-shadow var(--transition-medium) ease !important;
+}
+
+.MuiCard-root:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-hard) !important;
+}
+
+.MuiCardHeader-root {
+  background-color: var(--background-tertiary) !important;
+  padding: 16px !important;
+}
+
+.MuiCardHeader-title {
+  color: var(--text-primary) !important;
+  font-weight: 500 !important;
+}
+
+.MuiCardHeader-subheader {
+  color: var(--text-secondary) !important;
+}
+
+/* MUI Table */
+.MuiTable-root {
+  background-color: var(--background-secondary) !important;
+}
+
+.MuiTableHead-root {
+  background-color: var(--background-tertiary) !important;
+}
+
+.MuiTableCell-root {
+  border-bottom-color: rgba(255, 255, 255, 0.1) !important;
+  color: var(--text-primary) !important;
+}
+
+.MuiTableCell-head {
+  font-weight: 500 !important;
+  color: var(--text-primary) !important;
+}
+
+.MuiTableRow-root:hover {
+  background-color: rgba(255, 255, 255, 0.04) !important;
+}
+
+/* MUI Chip */
+.MuiChip-root {
+  background-color: var(--background-tertiary) !important;
+  color: var(--text-primary) !important;
+  font-weight: 500 !important;
+}
+
+.MuiChip-colorPrimary {
+  background-color: var(--accent-primary) !important;
+  color: white !important;
+}
+
+.MuiChip-colorSecondary {
+  background-color: var(--accent-secondary) !important;
+  color: white !important;
+}
+
+/* MUI Switch */
+.MuiSwitch-track {
+  background-color: var(--text-disabled) !important;
+  opacity: 1 !important;
+}
+
+.MuiSwitch-thumb {
+  background-color: var(--text-primary) !important;
+}
+
+.Mui-checked + .MuiSwitch-track {
+  background-color: var(--accent-primary) !important;
+  opacity: 0.5 !important;
+}
+
+.Mui-checked .MuiSwitch-thumb {
+  background-color: var(--accent-primary) !important;
+}
+
+/* MUI Slider */
+.MuiSlider-root {
+  color: var(--accent-quaternary) !important;
+}
+
+.MuiSlider-rail {
+  background-color: var(--text-disabled) !important;
+}
+
+.MuiSlider-thumb {
+  box-shadow: var(--shadow-soft) !important;
+}
+
+/* MUI Tooltip */
+.MuiTooltip-tooltip {
+  background-color: var(--background-tertiary) !important;
+  color: var(--text-primary) !important;
+  font-size: 12px !important;
+  border-radius: var(--border-radius-sm) !important;
+  box-shadow: var(--shadow-medium) !important;
+}
+
+/* MUI Snackbar/Alert */
+.MuiAlert-root {
+  border-radius: var(--border-radius-md) !important;
+}
+
+.MuiAlert-standardSuccess {
+  background-color: rgba(102, 187, 106, 0.15) !important;
+  color: var(--success) !important;
+}
+
+.MuiAlert-standardWarning {
+  background-color: rgba(255, 167, 38, 0.15) !important;
+  color: var(--warning) !important;
+}
+
+.MuiAlert-standardError {
+  background-color: rgba(239, 83, 80, 0.15) !important;
+  color: var(--error) !important;
+}
+
+.MuiAlert-standardInfo {
+  background-color: rgba(41, 182, 246, 0.15) !important;
+  color: var(--info) !important;
+}
+
+/* MUI Progress */
+.MuiLinearProgress-colorPrimary {
+  background-color: rgba(126, 87, 194, 0.2) !important;
+}
+
+.MuiLinearProgress-barColorPrimary {
+  background-color: var(--accent-primary) !important;
+}
+
+.MuiCircularProgress-colorPrimary {
+  color: var(--accent-primary) !important;
+}
+
+/* MUI Divider */
+.MuiDivider-root {
+  background-color: rgba(255, 255, 255, 0.1) !important;
+}
+
+/* Custom classes for casino game dev specific elements */
+
+/* Game preview container */
+.game-preview {
+  background-color: var(--background-tertiary);
+  border: 2px solid var(--accent-quaternary);
+  border-radius: var(--border-radius-lg);
+  padding: 20px;
+  box-shadow: var(--shadow-hard);
+  transition: all var(--transition-medium) ease;
+}
+
+.game-preview:hover {
+  box-shadow: 0 12px 20px rgba(255, 179, 0, 0.2);
+  transform: translateY(-5px);
+}
+
+/* Asset library items */
+.asset-item {
+  border: 1px solid var(--text-disabled);
+  border-radius: var(--border-radius-md);
+  overflow: hidden;
+  transition: all var(--transition-fast) ease;
+}
+
+.asset-item:hover {
+  border-color: var(--accent-primary);
+  transform: scale(1.03);
+}
+
+.asset-item.selected {
+  border-color: var(--accent-quaternary);
+  box-shadow: 0 0 0 2px var(--accent-quaternary);
+}
+
+/* Statistics and metrics panels */
+.stats-panel {
+  background: linear-gradient(145deg, var(--background-secondary), var(--background-tertiary));
+  border-radius: var(--border-radius-md);
+  padding: 16px;
+  box-shadow: var(--shadow-medium);
+}
+
+.stats-value {
+  font-size: 1.8rem;
+  font-weight: 600;
+  color: var(--accent-quaternary);
+}
+
+.stats-label {
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+}
+
+/* Timeline for development milestones */
+.timeline-item {
+  border-left: 3px solid var(--background-tertiary);
+  padding-left: 20px;
+  margin-bottom: 24px;
+  position: relative;
+  transition: border-color var(--transition-fast) ease;
+}
+
+.timeline-item::before {
+  content: "";
+  position: absolute;
+  left: -9px;
+  top: 0;
+  width: 15px;
+  height: 15px;
+  border-radius: 50%;
+  background-color: var(--background-tertiary);
+  border: 3px solid var(--background-primary);
+  transition: background-color var(--transition-fast) ease;
+}
+
+.timeline-item:hover {
+  border-color: var(--accent-primary);
+}
+
+.timeline-item:hover::before {
+  background-color: var(--accent-primary);
+}
+
+.timeline-item.complete {
+  border-color: var(--success);
+}
+
+.timeline-item.complete::before {
+  background-color: var(--success);
+}
+
+.timeline-item.current {
+  border-color: var(--accent-quaternary);
+}
+
+.timeline-item.current::before {
+  background-color: var(--accent-quaternary);
+}
+
+/* Code editor styling */
+.code-editor {
   background-color: #1a1a1a;
-  cursor: pointer;
-  transition: border-color 0.25s;
-}
-button:hover {
-  border-color: #646cff;
-}
-button:focus,
-button:focus-visible {
-  outline: 4px auto -webkit-focus-ring-color;
+  border-radius: var(--border-radius-md);
+  border: 1px solid var(--background-tertiary);
+  font-family: 'Roboto Mono', monospace;
+  overflow: hidden;
 }
 
-@media (prefers-color-scheme: light) {
-  :root {
-    color: #213547;
-    background-color: #ffffff;
+.code-editor-header {
+  background-color: var(--background-tertiary);
+  padding: 8px 16px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+/* Scrollbars */
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--background-primary);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--background-tertiary);
+  border-radius: 5px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--accent-primary);
+}
+
+/* Animation classes */
+.pulse {
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0% {
+    transform: scale(1);
   }
-  a:hover {
-    color: #747bff;
+  50% {
+    transform: scale(1.05);
   }
-  button {
-    background-color: #f9f9f9;
+  100% {
+    transform: scale(1);
+  }
+}
+
+.fade-in {
+  animation: fadeIn var(--transition-medium) ease-in;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .MuiDialog-paper {
+    margin: 16px !important;
+    width: calc(100% - 32px) !important;
+    max-width: none !important;
+  }
+  
+  .MuiCard-root:hover {
+    transform: none;
+  }
+  
+  .game-preview:hover {
+    transform: none;
   }
 }
