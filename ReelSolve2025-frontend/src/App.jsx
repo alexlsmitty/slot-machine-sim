@@ -12,7 +12,8 @@ import {
   Stars as BonusIcon,
   Calculate as RTPIcon,
   Menu as MenuIcon,
-  ChevronLeft as ChevronLeftIcon
+  ChevronLeft as ChevronLeftIcon,
+  Api as ApiIcon  // Add this new import
 } from '@mui/icons-material';
 import './App.css';
 import ReelMatrix from './components/MainTabComponents/ReelMatrix';
@@ -23,6 +24,7 @@ import BonusManager from './components/MainTabComponents/BonusManager';
 import RTPCalculator from './components/MainTabComponents/RTPCalculator';
 import { SymbolLibraryProvider } from './components/MainTabComponents/SymbolLibraryContext';
 import ConfigurationManager from './components/MainTabComponents/ConfigurationManager';
+import FlaskApiTest from './components/FlaskApiTest';
 
 function App() {
   const [currentView, setCurrentView] = useState('symbols');
@@ -138,6 +140,8 @@ const renderView = () => {
         return <BonusManager />;
       case 'rtp':
         return <RTPCalculator />;
+      case 'apitest':
+        return <FlaskApiTest />;  // Add this new case
       default:
         return <SymbolManager />;
     }
@@ -237,7 +241,8 @@ const renderView = () => {
                 { id: 'paylines', text: 'Payline Config', icon: <PaylineIcon /> },
                 { id: 'rules', text: 'Ruleset Manager', icon: <RulesetIcon /> },
                 { id: 'bonus', text: 'Bonus Manager', icon: <BonusIcon /> },
-                { id: 'rtp', text: 'RTP Calculator', icon: <RTPIcon /> }
+                { id: 'rtp', text: 'RTP Calculator', icon: <RTPIcon /> },
+                { id: 'apitest', text: 'API Test', icon: <ApiIcon /> } // Add this new item
               ].map((item) => (
                 <ListItem key={item.id} disablePadding>
                   <ListItemButton 
