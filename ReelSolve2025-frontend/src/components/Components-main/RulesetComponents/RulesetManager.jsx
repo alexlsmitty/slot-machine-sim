@@ -17,8 +17,8 @@ import {
 import { Delete, Edit, ContentCopy, Add } from '@mui/icons-material';
 import { useSymbolLibrary } from '@contexts/GameContexts';
 import SectionHeader from '../../Navigation/sectionHeader';
-import RuleConditionEffectEditor from './RuleConditionEffectEditor';
-import GameMechanicsEditor from './GameMechanicsEditor';
+import RuleConditionEffectEditor from './ruleConditionEffectEditor';
+import GameMechanicsEditor from './gameMechanicsEditor';
 
 // TabPanel component for the tabs
 function TabPanel(props) {

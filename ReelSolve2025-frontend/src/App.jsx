@@ -15,7 +15,7 @@ import {
   Api as ApiIcon
 } from '@mui/icons-material';
 import './App.css';
-// Import components...
+// Import components... (Slots first)
 import {
   ReelMatrix,
   SymbolManager,
@@ -24,26 +24,30 @@ import {
   BonusManager,
   ConfigurationManager
 } from './components/Components-main';
-import RTPCalculator from './utils/Rtp-Calc/RTPCalculator';
-import FlaskApiTest from '@Flask/flaskApiTest';
 import { 
   NavigationDrawer,
   GameSwitchConfig,
   SectionHeader,
   navigationConfig 
 } from '@components/Navigation';
-import BingoPatternManager from './components/Bingo-components/BingoPatternManager';
-import BingoGameMechanics from './components/Bingo-components/BingoGameMechanics';
-import BingoCardManager from './components/Bingo-components/BingoCardManager';
-import BingoBonusFeatures from './components/Bingo-components/BingoBonusFeatures';
+// Import bingo components
+import { 
+  BingoCardManager,
+  BingoPatternManager, 
+  BingoBonusFeatures, 
+  BingoGameMechanics } from './components/Bingo-components';
 // Import poker components
-import GameVariantSelector from './components/vPoker-components/gameVariantSelector';
-import PaytableConfig from './components/Components-main/configurationManager';
-import BonusAndSideBetManager from './components/vPoker-components/bonusAndSideBetManager';
-import CardLibraryManager from './components/vPoker-components/cardLibraryManager';
-import RNGConfigurator from './components/vPoker-components/rngConfigurator';
-// Import the unified GameProvider (replaces individual providers)
+import {
+  GameVariantSelector,
+  CardLibraryManager,
+  BonusAndSideBetManager,
+  RNGConfigurator
+} from './components/vPoker-components';
+import { PaytableConfig } from './components/Components-main';
+// Import the contexts and utils components/files
 import { GameProvider, useVideoPoker } from '@contexts/GameContexts';
+import RTPCalculator from './utils/Rtp-Calc/RTPCalculator';
+import FlaskApiTest from '@Flask/flaskApiTest';
 
 function App() {
   const [currentGameType, setCurrentGameType] = useState('slots');

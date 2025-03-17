@@ -1,4 +1,4 @@
-import VideoPokerVariant from './VideoPokerVariant';
+import VideoPokerVariant from './videoPokerVariant';
 
 export const videoPokerVariants = [
   new VideoPokerVariant('jacksOrBetter', 'Jacks or Better', 'standard', {
