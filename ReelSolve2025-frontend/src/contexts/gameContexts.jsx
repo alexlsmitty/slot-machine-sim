@@ -1,4 +1,4 @@
-import React, { createContext, useState, useContext, useEffect } from 'react';
+import React, { createContext, useState, useContext, useEffect, use } from 'react';
 import { videoPokerVariants } from '../models/videoPokerVariants';
 
 // =============================================================================
@@ -109,11 +109,215 @@ const defaultSymbols = [
   }
 ];
 
+// Default reel configuration
+const defaultReelConfig = {
+  selectionMethod: 'percentage',
+  reels: [
+    // Reel 1
+    { 
+      id: 1, 
+      height: 3, 
+      visibleHeight: 3, 
+      symbols: [
+        { id: 1, percentage: 5 },   // Diamond (rare)
+        { id: 2, percentage: 8 },   // Seven
+        { id: 3, percentage: 10 },  // Triple Bar
+        { id: 4, percentage: 12 },  // Bell
+        { id: 5, percentage: 14 },  // Watermelon
+        { id: 6, percentage: 15 },  // Grapes
+        { id: 7, percentage: 16 },  // Orange
+        { id: 8, percentage: 18 },  // Cherry
+        { id: 9, percentage: 18 },  // Lemon
+        { id: 10, percentage: 2 },  // Wild (very rare)
+        { id: 11, percentage: 2 }   // Scatter (very rare)
+      ]
+    },
+    // Reel 2
+    { 
+      id: 2, 
+      height: 3, 
+      visibleHeight: 3,
+      symbols: [
+        { id: 1, percentage: 4 },   // Diamond (rarer on middle reels)
+        { id: 2, percentage: 6 },   // Seven
+        { id: 3, percentage: 10 },  // Triple Bar
+        { id: 4, percentage: 13 },  // Bell
+        { id: 5, percentage: 15 },  // Watermelon
+        { id: 6, percentage: 16 },  // Grapes
+        { id: 7, percentage: 17 },  // Orange
+        { id: 8, percentage: 19 },  // Cherry
+        { id: 9, percentage: 19 },  // Lemon
+        { id: 10, percentage: 1 },  // Wild (very rare)
+        { id: 11, percentage: 2 }   // Scatter
+      ]
+    },
+    // Reel 3
+    { 
+      id: 3, 
+      height: 3, 
+      visibleHeight: 3,
+      symbols: [
+        { id: 1, percentage: 4 },   // Diamond
+        { id: 2, percentage: 5 },   // Seven
+        { id: 3, percentage: 8 },   // Triple Bar
+        { id: 4, percentage: 10 },  // Bell
+        { id: 5, percentage: 15 },  // Watermelon
+        { id: 6, percentage: 16 },  // Grapes
+        { id: 7, percentage: 17 },  // Orange
+        { id: 8, percentage: 19 },  // Cherry
+        { id: 9, percentage: 20 },  // Lemon
+        { id: 10, percentage: 1 },  // Wild
+        { id: 11, percentage: 3 }   // Scatter (more common on middle reel)
+      ]
+    },
+    // Reel 4
+    { 
+      id: 4, 
+      height: 3, 
+      visibleHeight: 3,
+      symbols: [
+        { id: 1, percentage: 3 },   // Diamond
+        { id: 2, percentage: 5 },   // Seven
+        { id: 3, percentage: 8 },   // Triple Bar
+        { id: 4, percentage: 10 },  // Bell
+        { id: 5, percentage: 15 },  // Watermelon
+        { id: 6, percentage: 16 },  // Grapes
+        { id: 7, percentage: 18 },  // Orange
+        { id: 8, percentage: 19 },  // Cherry
+        { id: 9, percentage: 20 },  // Lemon
+        { id: 10, percentage: 1 },  // Wild
+        { id: 11, percentage: 2 }   // Scatter
+      ] 
+    },
+    // Reel 5
+    { 
+      id: 5, 
+      height: 3, 
+      visibleHeight: 3,
+      symbols: [
+        { id: 1, percentage: 2 },   // Diamond (even rarer on last reel)
+        { id: 2, percentage: 3 },   // Seven
+        { id: 3, percentage: 6 },   // Triple Bar
+        { id: 4, percentage: 8 },   // Bell
+        { id: 5, percentage: 14 },  // Watermelon
+        { id: 6, percentage: 15 },  // Grapes
+        { id: 7, percentage: 17 },  // Orange
+        { id: 8, percentage: 21 },  // Cherry
+        { id: 9, percentage: 22 },  // Lemon
+        { id: 10, percentage: 1 },  // Wild
+        { id: 11, percentage: 2 }   // Scatter
+      ]
+    }
+  ]
+};
+
+const [reelConfig, setReelConfig] = useState({
+    selectionMethod: 'percentage',
+    reels: defaultReelConfig?.reels || [
+      // Reel 1
+      { 
+        id: 1, 
+        height: 3, 
+        visibleHeight: 3, 
+        symbols: [
+          { id: 1, percentage: 5 },   // Diamond (rare)
+          { id: 2, percentage: 8 },   // Seven
+          { id: 3, percentage: 10 },  // Triple Bar
+          { id: 4, percentage: 12 },  // Bell
+          { id: 5, percentage: 14 },  // Watermelon
+          { id: 6, percentage: 15 },  // Grapes
+          { id: 7, percentage: 16 },  // Orange
+          { id: 8, percentage: 18 },  // Cherry
+          { id: 9, percentage: 18 },  // Lemon
+          { id: 10, percentage: 2 },  // Wild (very rare)
+          { id: 11, percentage: 2 }   // Scatter (very rare)
+        ]
+      },
+      // Reel 2
+      { 
+        id: 2, 
+        height: 3, 
+        visibleHeight: 3,
+        symbols: [
+          { id: 1, percentage: 4 },   // Diamond (rarer on middle reels)
+          { id: 2, percentage: 6 },   // Seven
+          { id: 3, percentage: 10 },  // Triple Bar
+          { id: 4, percentage: 13 },  // Bell
+          { id: 5, percentage: 15 },  // Watermelon
+          { id: 6, percentage: 16 },  // Grapes
+          { id: 7, percentage: 17 },  // Orange
+          { id: 8, percentage: 19 },  // Cherry
+          { id: 9, percentage: 19 },  // Lemon
+          { id: 10, percentage: 1 },  // Wild (very rare)
+          { id: 11, percentage: 2 }   // Scatter
+        ]
+      },
+      // Reel 3
+      { 
+        id: 3, 
+        height: 3, 
+        visibleHeight: 3,
+        symbols: [
+          { id: 1, percentage: 4 },   // Diamond
+          { id: 2, percentage: 5 },   // Seven
+          { id: 3, percentage: 8 },   // Triple Bar
+          { id: 4, percentage: 10 },  // Bell
+          { id: 5, percentage: 15 },  // Watermelon
+          { id: 6, percentage: 16 },  // Grapes
+          { id: 7, percentage: 17 },  // Orange
+          { id: 8, percentage: 19 },  // Cherry
+          { id: 9, percentage: 20 },  // Lemon
+          { id: 10, percentage: 1 },  // Wild
+          { id: 11, percentage: 3 }   // Scatter (more common on middle reel)
+        ]
+      },
+      // Reel 4
+      { 
+        id: 4, 
+        height: 3, 
+        visibleHeight: 3,
+        symbols: [
+          { id: 1, percentage: 3 },   // Diamond
+          { id: 2, percentage: 5 },   // Seven
+          { id: 3, percentage: 8 },   // Triple Bar
+          { id: 4, percentage: 10 },  // Bell
+          { id: 5, percentage: 15 },  // Watermelon
+          { id: 6, percentage: 16 },  // Grapes
+          { id: 7, percentage: 18 },  // Orange
+          { id: 8, percentage: 19 },  // Cherry
+          { id: 9, percentage: 20 },  // Lemon
+          { id: 10, percentage: 1 },  // Wild
+          { id: 11, percentage: 2 }   // Scatter
+        ] 
+      },
+      // Reel 5
+      { 
+        id: 5, 
+        height: 3, 
+        visibleHeight: 3,
+        symbols: [
+          { id: 1, percentage: 2 },   // Diamond (even rarer on last reel)
+          { id: 2, percentage: 3 },   // Seven
+          { id: 3, percentage: 6 },   // Triple Bar
+          { id: 4, percentage: 8 },   // Bell
+          { id: 5, percentage: 14 },  // Watermelon
+          { id: 6, percentage: 15 },  // Grapes
+          { id: 7, percentage: 17 },  // Orange
+          { id: 8, percentage: 21 },  // Cherry
+          { id: 9, percentage: 22 },  // Lemon
+          { id: 10, percentage: 1 },  // Wild
+          { id: 11, percentage: 2 }   // Scatter
+        ]
+      }
+    ]
+  });
+
 // =============================================================================
 // Context Creation
 // =============================================================================
 
 // Create all contexts
+const ReelMatrixContext = createContext();
 const SymbolLibraryContext = createContext();
 const VideoPokerContext = createContext();
 const PayTableContext = createContext();
@@ -150,6 +354,23 @@ export const GameProvider = ({ children }) => {
       });
     }
   }, []);
+// =========================================================================
+// Reel Matrix State
+// =========================================================================
+const [reelConfig, setReelConfig] = useState(defaultReelConfig);
+
+// Load reel configuration from storage on mount
+useEffect(() => {
+  if (window.api && window.api.getReelConfig) {
+    window.api.getReelConfig().then(config => {
+      if (config) {
+        setReelConfig(config);
+      }
+    }).catch(err => {
+      console.error("Error loading reel configuration:", err);
+    });
+  }
+}, []);
 
   // =========================================================================
   // Pay Table State
@@ -171,13 +392,15 @@ export const GameProvider = ({ children }) => {
   // Render nested providers
   // =========================================================================
   return (
-    <SymbolLibraryContext.Provider value={{ symbols, setSymbols }}>
-      <VideoPokerContext.Provider value={{ variant, setVariant }}>
-        <PayTableContext.Provider value={{ payTable, setPayTable }}>
-          {children}
-        </PayTableContext.Provider>
-      </VideoPokerContext.Provider>
-    </SymbolLibraryContext.Provider>
+    <ReelMatrixContext.Provider value={{ reelConfig, setReelConfig }}>
+      <SymbolLibraryContext.Provider value={{ symbols, setSymbols }}>
+        <VideoPokerContext.Provider value={{ variant, setVariant }}>
+          <PayTableContext.Provider value={{ payTable, setPayTable }}>
+            {children}
+          </PayTableContext.Provider>
+        </VideoPokerContext.Provider>
+      </SymbolLibraryContext.Provider>
+    </ReelMatrixContext.Provider>
   );
 };
 
@@ -194,12 +417,15 @@ export const useVideoPoker = () => useContext(VideoPokerContext);
 // Pay Table hooks
 export const usePayTable = () => useContext(PayTableContext);
 
+// Reel Matrix hooks
+export const useReelMatrix = () => useContext(ReelMatrixContext);
+
 // Combined hook for components that need multiple contexts
 export const useGameState = () => {
   return {
     ...useSymbolLibrary(),
     ...useVideoPoker(),
-    ...usePayTable()
+    ...usePayTable(),
   };
 };
 
@@ -207,7 +433,7 @@ export const useGameState = () => {
 // Legacy exports to maintain compatibility with existing code
 // =============================================================================
 
-export { SymbolLibraryContext, VideoPokerContext, PayTableContext };
+export { SymbolLibraryContext, VideoPokerContext, PayTableContext, ReelMatrixContext };
 export const VideoPokerProvider = ({ children }) => {
   const { variant, setVariant } = useVideoPoker();
   
@@ -235,5 +461,15 @@ export const PayTableProvider = ({ children, variant }) => {
     <PayTableContext.Provider value={{ payTable, setPayTable }}>
       {children}
     </PayTableContext.Provider>
+  );
+};
+
+export const ReelMatrixProvider = ({ children }) => {
+  const { reelConfig, setReelConfig } = useReelMatrix();
+  
+  return (
+    <ReelMatrixContext.Provider value={{ reelConfig, setReelConfig }}>
+      {children}
+    </ReelMatrixContext.Provider>
   );
 };

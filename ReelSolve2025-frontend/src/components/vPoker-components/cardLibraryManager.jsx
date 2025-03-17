@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Grid, Typography, Button, Paper, Alert } from '@mui/material';
+import { Grid2, Typography, Button, Paper, Alert } from '@mui/material';
 import TabContainer from '../Shared/tabContainer';
 import { useVideoPoker } from '@contexts/GameContexts';
 import ErrorBoundary from '../Shared/errorBoundary';
@@ -54,9 +54,9 @@ const CardLibraryManager = () => {
           <Typography variant="h5" gutterBottom>
             Card Library Manager
           </Typography>
-          <Grid container spacing={2}>
+          <Grid2 container spacing={2}>
             {cards.map((card) => (
-              <Grid item key={card.id} xs={12} sm={6} md={4}>
+              <Grid2 item key={card.id} xs={12} sm={6} md={4}>
                 <Paper elevation={3} sx={{ p: 2, textAlign: 'center' }}>
                   <img
                     src={card.image}
@@ -76,9 +76,9 @@ const CardLibraryManager = () => {
                     Preview
                   </Button>
                 </Paper>
-              </Grid>
+              </Grid2>
             ))}
-          </Grid>
+          </Grid2>
         </TabContainer>
       </ErrorBoundary>
     );
