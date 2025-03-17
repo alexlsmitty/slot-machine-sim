@@ -16,14 +16,16 @@ import {
 } from '@mui/icons-material';
 import './App.css';
 // Import components...
-import ReelMatrix from './components/Components-main/ReelMatrix';
-import SymbolManager from './components/Components-main/SymbolManager';
-import PaylineConfig from './components/Components-main/ConfigurationManager';
-import RulesetManager from './components/Components-main/RulesetComponents/RulesetManager';
-import BonusManager from './components/Components-main/BonusManager';
+import {
+  ReelMatrix,
+  SymbolManager,
+  PaylineConfiguration,
+  RulesetManager,
+  BonusManager,
+  ConfigurationManager
+} from './components/Components-main';
 import RTPCalculator from './utils/Rtp-Calc/RTPCalculator';
-import ConfigurationManager from './components/Components-main/ConfigurationManager';
-import FlaskApiTest from './components/flaskApiTest';
+import FlaskApiTest from '@Flask/flaskApiTest';
 import { 
   NavigationDrawer,
   GameSwitchConfig,
@@ -36,7 +38,7 @@ import BingoCardManager from './components/Bingo-components/BingoCardManager';
 import BingoBonusFeatures from './components/Bingo-components/BingoBonusFeatures';
 // Import poker components
 import GameVariantSelector from './components/vPoker-components/gameVariantSelector';
-import PaytableConfig from './components/Components-main/ConfigurationManager';
+import PaytableConfig from './components/Components-main/configurationManager';
 import BonusAndSideBetManager from './components/vPoker-components/bonusAndSideBetManager';
 import CardLibraryManager from './components/vPoker-components/cardLibraryManager';
 import RNGConfigurator from './components/vPoker-components/rngConfigurator';
@@ -71,7 +73,7 @@ function App() {
         case 'symbol':
           return <SymbolManager />;
         case 'payline':
-          return <PaylineConfig />;
+          return <PaylineConfiguration />;
         case 'rules':
           return <RulesetManager />;
         case 'bonus':

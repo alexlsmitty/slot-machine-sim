@@ -1,8 +1,11 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import { 
   Button, ButtonGroup, Dialog, DialogActions, DialogContent, 
   DialogTitle, TextField, List, ListItem, ListItemText, 
-  IconButton, Stack, Snackbar, Alert, Box, Tooltip
+  IconButton, Stack, Snackbar, Alert, Box, Tooltip,
+  Table, TableBody, TableCell, TableContainer, TableHead, TableRow,
+  Paper, Card, CardContent, Typography, FormControlLabel, Switch,
+  Grid, Divider
 } from '@mui/material';
 import { 
   Save as SaveIcon, 
@@ -11,8 +14,18 @@ import {
   Delete as DeleteIcon, 
   Check as CheckIcon,
   Backup as BackupIcon,
-  SaveAs as SaveAsIcon
+  SaveAs as SaveAsIcon,
+  Edit,
+  ArrowForward,
+  Add,
+  Info as InfoIcon
 } from '@mui/icons-material';
+import Grid2 from '@mui/material/Grid2';
+import { ToggleButton, ToggleButtonGroup } from '@mui/material';
+import { useSymbolLibrary } from '@contexts/GameContexts';
+import { PayTableContext } from '@contexts/GameContexts'; 
+import SectionHeader from '@Navigation/sectionHeader';
+import { TabContainer, ErrorBoundary } from '@Shared';
 
 const ConfigurationManager = () => {
   const [saveDialogOpen, setSaveDialogOpen] = useState(false);
@@ -510,6 +523,7 @@ const PaylineConfiguration = () => {
   const [symbolsUpdated, setSymbolsUpdated] = useState(false);
   const [minClusterSize, setMinClusterSize] = useState(6);
   const [maxClusterSize, setMaxClusterSize] = useState(10); // Add max cluster size
+  const [errorMessage, setErrorMessage] = useState(null);
 
   // On mount, try to load saved payline configuration via IPC
   useEffect(() => {
@@ -544,18 +558,25 @@ const PaylineConfiguration = () => {
 
   // Save all payline configuration
   const saveConfiguration = (customConfig = null) => {
-    const config = customConfig || {
-      paylines,
-      paylineType,
-      evaluationType,
-      reelCount,
-      rowCount,
-      minClusterSize,
-      maxClusterSize
-    };
-    
-    if (window.api && window.api.savePaylineConfig) {
-      window.api.savePaylineConfig(config);
+    try {
+      const config = customConfig || {
+        paylines,
+        paylineType,
+        evaluationType,
+        reelCount,
+        rowCount,
+        minClusterSize,
+        maxClusterSize
+      };
+      
+      console.log('Saving configuration:', config);
+      
+      if (window.api && window.api.savePaylineConfig) {
+        window.api.savePaylineConfig(config);
+      }
+    } catch (error) {
+      console.error('Error saving configuration:', error);
+      setErrorMessage(`Failed to save configuration: ${error.message}`);
     }
   };
 
@@ -633,66 +654,72 @@ const PaylineConfiguration = () => {
   };
 
   const handlePaylineTypeChange = (event, newValue) => {
-    if (!newValue) return;
-    
-    setPaylineType(newValue);
-    
-    if (newValue === 'clusters') {
-      // Calculate minimum cluster size based on reels and rows
-      // For most slot layouts, 6 is a good minimum (2x3 grid)
-      const minSize = Math.min(6, Math.floor((reelCount * rowCount) / 2));
-      setMinClusterSize(minSize);
-      const maxSize = minSize + 4; // Default max is min + 4
-      setMaxClusterSize(maxSize);
+    try {
+      if (!newValue) return;
       
-      // Update symbols to use cluster-style payouts
-      if (symbols && symbols.length > 0 && !symbolsUpdated) {
-        const updatedSymbols = symbols.map(symbol => {
-          const newSymbol = { ...symbol };
-          // Create cluster-based payout structure
-          if (newSymbol.payouts) {
-            const oldPayouts = { ...newSymbol.payouts };
-            const newPayouts = {};
-            
-            // Generate payouts for cluster sizes from minSize to maxSize
-            for (let clusterSize = minSize; clusterSize <= maxSize; clusterSize++) {
-              // Base new payouts on existing payouts, scaling up for larger clusters
-              const i = clusterSize - minSize; // index within the range
-              if (i < 3 && oldPayouts[i+3]) {
-                newPayouts[clusterSize] = oldPayouts[i+3] * (1 + 0.5 * i);
-              } else {
-                // For larger clusters, scale from the 5 of a kind payout if available
-                newPayouts[clusterSize] = oldPayouts[5] 
-                  ? oldPayouts[5] * (1 + 0.5 * i) 
-                  : clusterSize * 10; // Default value
+      console.log('Changing payline type:', newValue);
+      setPaylineType(newValue);
+      
+      if (newValue === 'clusters') {
+        // Calculate minimum cluster size based on reels and rows
+        // For most slot layouts, 6 is a good minimum (2x3 grid)
+        const minSize = Math.min(6, Math.floor((reelCount * rowCount) / 2));
+        setMinClusterSize(minSize);
+        const maxSize = minSize + 4; // Default max is min + 4
+        setMaxClusterSize(maxSize);
+        
+        // Update symbols to use cluster-style payouts
+        if (symbols && symbols.length > 0 && !symbolsUpdated) {
+          const updatedSymbols = symbols.map(symbol => {
+            const newSymbol = { ...symbol };
+            // Create cluster-based payout structure
+            if (newSymbol.payouts) {
+              const oldPayouts = { ...newSymbol.payouts };
+              const newPayouts = {};
+              
+              // Generate payouts for cluster sizes from minSize to maxSize
+              for (let clusterSize = minSize; clusterSize <= maxSize; clusterSize++) {
+                // Base new payouts on existing payouts, scaling up for larger clusters
+                const i = clusterSize - minSize; // index within the range
+                if (i < 3 && oldPayouts[i+3]) {
+                  newPayouts[clusterSize] = oldPayouts[i+3] * (1 + 0.5 * i);
+                } else {
+                  // For larger clusters, scale from the 5 of a kind payout if available
+                  newPayouts[clusterSize] = oldPayouts[5] 
+                    ? oldPayouts[5] * (1 + 0.5 * i) 
+                    : clusterSize * 10; // Default value
+                }
               }
+              
+              newSymbol.payouts = newPayouts;
             }
-            
-            newSymbol.payouts = newPayouts;
+            return newSymbol;
+          });
+          
+          setSymbols(updatedSymbols);
+          setSymbolsUpdated(true);
+          
+          // Save updated symbols to persistence
+          if (window.api && window.api.saveSymbolConfig) {
+            window.api.saveSymbolConfig(updatedSymbols);
           }
-          return newSymbol;
-        });
-        
-        setSymbols(updatedSymbols);
-        setSymbolsUpdated(true);
-        
-        // Save updated symbols to persistence
-        if (window.api && window.api.saveSymbolConfig) {
-          window.api.saveSymbolConfig(updatedSymbols);
         }
       }
+      
+      // Save configuration
+      saveConfiguration({
+        paylines,
+        paylineType: newValue,
+        evaluationType,
+        reelCount,
+        rowCount,
+        minClusterSize,
+        maxClusterSize
+      });
+    } catch (error) {
+      console.error('Error changing payline type:', error);
+      setErrorMessage(`Failed to change payline type: ${error.message}`);
     }
-    
-    // Save configuration
-    saveConfiguration({
-      paylines,
-      paylineType: newValue,
-      evaluationType,
-      reelCount,
-      rowCount,
-      minClusterSize,
-      maxClusterSize
-    });
   };
   
   // Handle cluster size change and update symbols accordingly
@@ -1010,7 +1037,7 @@ const PaylineConfiguration = () => {
                     <Edit />
                   </IconButton>
                   <IconButton onClick={() => handleDelete(payline.id)}>
-                    <Delete />
+                    <DeleteIcon /> {/* Changed from Delete to DeleteIcon */}
                   </IconButton>
                 </TableCell>
               </TableRow>
@@ -1024,232 +1051,252 @@ const PaylineConfiguration = () => {
   // Get the cluster sizes for display in the UI
   const clusterSizes = getClusterSizes();
 
-  return (
-    <Box sx={{ p: 3 }}>
-      <SectionHeader 
-        title="Payline Configuration"
-        action={
-          paylineType === 'standard' && (
-            <Button 
-              variant="contained" 
-              startIcon={<Add />} 
-              onClick={() => handleOpen()}
-            >
-              Add New Payline
-            </Button>
-          )
-        }
-      />
-
-      <Box sx={{ mb: 4 }}>
-        <Typography variant="h6" gutterBottom>Game Type & Evaluation Rules</Typography>
-        <Paper sx={{ p: 2 }}>
-          <Grid2 container spacing={3}>
-            <Grid2 item xs={12}>
-              <Typography variant="subtitle1" gutterBottom>Payline Type:</Typography>
-              <ToggleButtonGroup
-                color="primary"
-                value={paylineType}
-                exclusive
-                onChange={handlePaylineTypeChange}
-                aria-label="Payline Type"
-                sx={{ mb: 2 }}
-              >
-                <ToggleButton value="standard">
-                  <Tooltip title="Traditional paylines with specific patterns">
-                    <Box>Standard Paylines</Box>
-                  </Tooltip>
-                </ToggleButton>
-                <ToggleButton value="ways">
-                  <Tooltip title="Any symbols in adjacent reels create wins (243-ways, 1024-ways, etc.)">
-                    <Box>Ways</Box>
-                  </Tooltip>
-                </ToggleButton>
-                <ToggleButton value="clusters">
-                  <Tooltip title="Groups of adjacent matching symbols form wins">
-                    <Box>Clusters</Box>
-                  </Tooltip>
-                </ToggleButton>
-              </ToggleButtonGroup>
-
-              {paylineType === 'standard' && (
+  const renderContent = () => {
+    try {
+      return (
+        <Box sx={{ p: 3 }}>
+          <SectionHeader 
+            title="Payline Configuration"
+            action={
+              paylineType === 'standard' && (
                 <Button 
-                  variant="outlined"
-                  onClick={generateStandardPaylines}
-                  sx={{ ml: 2 }}
+                  variant="contained" 
+                  startIcon={<Add />} 
+                  onClick={() => handleOpen()}
                 >
-                  Generate Standard Paylines
+                  Add New Payline
                 </Button>
-              )}
+              )
+            }
+          />
 
-              <Divider sx={{ my: 2 }} />
-            </Grid2>
-
-            <Grid2 item xs={12} sm={4}>
-              <TextField
-                fullWidth
-                label="Number of Reels"
-                type="number"
-                slotProps={{ input: { min: 3, max: 9 } }}
-                value={reelCount}
-                onChange={(e) => {
-                  const newValue = parseInt(e.target.value);
-                  setReelCount(newValue);
-                  saveConfiguration({
-                    paylines,
-                    paylineType,
-                    evaluationType,
-                    reelCount: newValue,
-                    rowCount,
-                    minClusterSize,
-                    maxClusterSize
-                  });
-                }}
-              />
-            </Grid2>
-            <Grid2 item xs={12} sm={4}>
-              <TextField
-                fullWidth
-                label="Number of Rows"
-                type="number"
-                slotProps={{ input: { min: 2, max: 6 } }}
-                value={rowCount}
-                onChange={(e) => {
-                  const newValue = parseInt(e.target.value);
-                  setRowCount(newValue);
-                  saveConfiguration({
-                    paylines,
-                    paylineType,
-                    evaluationType,
-                    reelCount,
-                    rowCount: newValue,
-                    minClusterSize,
-                    maxClusterSize
-                  });
-                }}
-              />
-            </Grid2>
-            <Grid2 item xs={12} sm={4}>
-              <FormControlLabel
-                control={
+          <Box sx={{ mb: 4 }}>
+            <Typography variant="h6" gutterBottom>Game Type & Evaluation Rules</Typography>
+            <Paper sx={{ p: 2 }}>
+              <Grid2 container spacing={3}>
+                <Grid2 item xs={12}>
+                  <Typography variant="subtitle1" gutterBottom>Payline Type:</Typography>
                   <ToggleButtonGroup
                     color="primary"
-                    value={evaluationType}
+                    value={paylineType}
                     exclusive
-                    onChange={(_, val) => {
-                      if (val) {
-                        setEvaluationType(val);
-                        saveConfiguration({
-                          paylines,
-                          paylineType,
-                          evaluationType: val,
-                          reelCount,
-                          rowCount,
-                          minClusterSize,
-                          maxClusterSize
-                        });
-                      }
-                    }}
-                    size="small"
-                    sx={{ ml: 2 }}
+                    onChange={handlePaylineTypeChange}
+                    aria-label="Payline Type"
+                    sx={{ mb: 2 }}
                   >
-                    <ToggleButton value="leftToRight">Left → Right</ToggleButton>
-                    <ToggleButton value="anyDirection">Any Direction</ToggleButton>
+                    <ToggleButton value="standard">
+                      <Tooltip title="Traditional paylines with specific patterns">
+                        <Box>Standard Paylines</Box>
+                      </Tooltip>
+                    </ToggleButton>
+                    <ToggleButton value="ways">
+                      <Tooltip title="Any symbols in adjacent reels create wins (243-ways, 1024-ways, etc.)">
+                        <Box>Ways</Box>
+                      </Tooltip>
+                    </ToggleButton>
+                    <ToggleButton value="clusters">
+                      <Tooltip title="Groups of adjacent matching symbols form wins">
+                        <Box>Clusters</Box>
+                      </Tooltip>
+                    </ToggleButton>
                   </ToggleButtonGroup>
-                }
-                label="Evaluation Direction:"
-                labelPlacement="start"
-              />
-            </Grid2>
-          </Grid2>
-        </Paper>
-      </Box>
 
-      {paylineType === 'clusters' && (
-        <Card sx={{ mb: 4 }}>
-          <CardContent>
-            <Typography variant="h6" gutterBottom>Cluster Pays Information</Typography>
-            <Typography variant="body2" component="p">
-              In Cluster Pays mode, winning combinations are formed when identical symbols appear in connected groups. 
-              Symbols are connected if they are horizontally or vertically adjacent to each other.
-            </Typography>
-            
-            <Box sx={{ mb: 2 }}>
-              <Typography variant="subtitle1" gutterBottom>Cluster Size Configuration</Typography>
-              <Grid2 container spacing={2} alignItems="center">
-                <Grid2 item xs={12} sm={6}>
+                  {paylineType === 'standard' && (
+                    <Button 
+                      variant="outlined"
+                      onClick={generateStandardPaylines}
+                      sx={{ ml: 2 }}
+                    >
+                      Generate Standard Paylines
+                    </Button>
+                  )}
+
+                  <Divider sx={{ my: 2 }} />
+                </Grid2>
+
+                <Grid2 item xs={12} sm={4}>
                   <TextField
-                    label="Minimum Cluster Size"
-                    type="number"
-                    value={minClusterSize}
-                    onChange={(e) => handleClusterSizeChange(true, parseInt(e.target.value))}
-                    slotProps={{ input: { min: 3, max: maxClusterSize - 1 } }}
                     fullWidth
-                    helperText="Minimum number of symbols needed for a cluster win"
+                    label="Number of Reels"
+                    type="number"
+                    slotProps={{ input: { min: 3, max: 9 } }}
+                    value={reelCount}
+                    onChange={(e) => {
+                      const newValue = parseInt(e.target.value);
+                      setReelCount(newValue);
+                      saveConfiguration({
+                        paylines,
+                        paylineType,
+                        evaluationType,
+                        reelCount: newValue,
+                        rowCount,
+                        minClusterSize,
+                        maxClusterSize
+                      });
+                    }}
                   />
                 </Grid2>
-                <Grid2 item xs={12} sm={6}>
+                <Grid2 item xs={12} sm={4}>
                   <TextField
-                    label="Maximum Cluster Size"
-                    type="number"
-                    value={maxClusterSize}
-                    onChange={(e) => handleClusterSizeChange(false, parseInt(e.target.value))}
-                    slotProps={{ input: { min: minClusterSize + 1, max: 30 } }}
                     fullWidth
-                    helperText="Maximum cluster size for highest payout"
+                    label="Number of Rows"
+                    type="number"
+                    slotProps={{ input: { min: 2, max: 6 } }}
+                    value={rowCount}
+                    onChange={(e) => {
+                      const newValue = parseInt(e.target.value);
+                      setRowCount(newValue);
+                      saveConfiguration({
+                        paylines,
+                        paylineType,
+                        evaluationType,
+                        reelCount,
+                        rowCount: newValue,
+                        minClusterSize,
+                        maxClusterSize
+                      });
+                    }}
+                  />
+                </Grid2>
+                <Grid2 item xs={12} sm={4}>
+                  <FormControlLabel
+                    control={
+                      <ToggleButtonGroup
+                        color="primary"
+                        value={evaluationType}
+                        exclusive
+                        onChange={(_, val) => {
+                          if (val) {
+                            setEvaluationType(val);
+                            saveConfiguration({
+                              paylines,
+                              paylineType,
+                              evaluationType: val,
+                              reelCount,
+                              rowCount,
+                              minClusterSize,
+                              maxClusterSize
+                            });
+                          }
+                        }}
+                        size="small"
+                        sx={{ ml: 2 }}
+                      >
+                        <ToggleButton value="leftToRight">Left → Right</ToggleButton>
+                        <ToggleButton value="anyDirection">Any Direction</ToggleButton>
+                      </ToggleButtonGroup>
+                    }
+                    label="Evaluation Direction:"
+                    labelPlacement="start"
                   />
                 </Grid2>
               </Grid2>
-            </Box>
-            
-            <Typography variant="body2" component="p">
-              Symbol payouts will be configured for the following cluster sizes: {clusterSizes.join(', ')} symbols.
-            </Typography>
-            
-            <Typography variant="subtitle2" color="primary">
-              Note: Symbol payouts have been automatically adjusted to reflect cluster values.
-            </Typography>
-          </CardContent>
-        </Card>
-      )}
+            </Paper>
+          </Box>
 
-      {paylineType === 'ways' && (
-        <Card sx={{ mb: 4 }}>
-          <CardContent>
-            <Typography variant="h6" gutterBottom>Ways Pays Information</Typography>
-            <Typography variant="body2" component="p">
-              In Ways Pays mode, winning combinations are formed when matching symbols appear on adjacent reels, 
-              starting from the leftmost reel. Any position on a reel connects to any position on an adjacent reel.
-            </Typography>
-            <Typography variant="body2">
-              The total number of ways to win is: {rowCount}<sup>{reelCount}</sup> = {Math.pow(rowCount, reelCount)} ways
-            </Typography>
-          </CardContent>
-        </Card>
-      )}
+          {paylineType === 'clusters' && (
+            <Card sx={{ mb: 4 }}>
+              <CardContent>
+                <Typography variant="h6" gutterBottom>Cluster Pays Information</Typography>
+                <Typography variant="body2" component="p">
+                  In Cluster Pays mode, winning combinations are formed when identical symbols appear in connected groups. 
+                  Symbols are connected if they are horizontally or vertically adjacent to each other.
+                </Typography>
+                
+                <Box sx={{ mb: 2 }}>
+                  <Typography variant="subtitle1" gutterBottom>Cluster Size Configuration</Typography>
+                  <Grid2 container spacing={2} alignItems="center">
+                    <Grid2 item xs={12} sm={6}>
+                      <TextField
+                        label="Minimum Cluster Size"
+                        type="number"
+                        value={minClusterSize}
+                        onChange={(e) => handleClusterSizeChange(true, parseInt(e.target.value))}
+                        slotProps={{ input: { min: 3, max: maxClusterSize - 1 } }}
+                        fullWidth
+                        helperText="Minimum number of symbols needed for a cluster win"
+                      />
+                    </Grid2>
+                    <Grid2 item xs={12} sm={6}>
+                      <TextField
+                        label="Maximum Cluster Size"
+                        type="number"
+                        value={maxClusterSize}
+                        onChange={(e) => handleClusterSizeChange(false, parseInt(e.target.value))}
+                        slotProps={{ input: { min: minClusterSize + 1, max: 30 } }}
+                        fullWidth
+                        helperText="Maximum cluster size for highest payout"
+                      />
+                    </Grid2>
+                  </Grid2>
+                </Box>
+                
+                <Typography variant="body2" component="p">
+                  Symbol payouts will be configured for the following cluster sizes: {clusterSizes.join(', ')} symbols.
+                </Typography>
+                
+                <Typography variant="subtitle2" color="primary">
+                  Note: Symbol payouts have been automatically adjusted to reflect cluster values.
+                </Typography>
+              </CardContent>
+            </Card>
+          )}
 
-      {renderPaylineTable()}
+          {paylineType === 'ways' && (
+            <Card sx={{ mb: 4 }}>
+              <CardContent>
+                <Typography variant="h6" gutterBottom>Ways Pays Information</Typography>
+                <Typography variant="body2" component="p">
+                  In Ways Pays mode, winning combinations are formed when matching symbols appear on adjacent reels, 
+                  starting from the leftmost reel. Any position on a reel connects to any position on an adjacent reel.
+                </Typography>
+                <Typography variant="body2">
+                  The total number of ways to win is: {rowCount}<sup>{reelCount}</sup> = {Math.pow(rowCount, reelCount)} ways
+                </Typography>
+              </CardContent>
+            </Card>
+          )}
 
-      <Dialog open={open} onClose={handleClose} maxWidth="md" fullWidth>
-        <DialogTitle>
-          {currentPayline && currentPayline.id && paylines.find(p => p.id === currentPayline.id) 
-            ? `Edit Payline: ${currentPayline.name}` 
-            : 'Create New Payline'}
-        </DialogTitle>
-        <DialogContent>
-          {renderPaylineEditor()}
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={handleClose}>Cancel</Button>
-          <Button onClick={handleSave} variant="contained" color="primary">
-            Save Payline
-          </Button>
-        </DialogActions>
-      </Dialog>
-    </Box>
+          {renderPaylineTable()}
+
+          <Dialog open={open} onClose={handleClose} maxWidth="md" fullWidth>
+            <DialogTitle>
+              {currentPayline && currentPayline.id && paylines.find(p => p.id === currentPayline.id) 
+                ? `Edit Payline: ${currentPayline.name}` 
+                : 'Create New Payline'}
+            </DialogTitle>
+            <DialogContent>
+              {renderPaylineEditor()}
+            </DialogContent>
+            <DialogActions>
+              <Button onClick={handleClose}>Cancel</Button>
+              <Button onClick={handleSave} variant="contained" color="primary">
+                Save Payline
+              </Button>
+            </DialogActions>
+          </Dialog>
+        </Box>
+      );
+    } catch (error) {
+      console.error("Error rendering PaylineConfiguration:", error);
+      return (
+        <Alert severity="error" sx={{ mb: 2 }}>
+          Error rendering payline configuration: {error.message}
+        </Alert>
+      );
+    }
+  };
+
+
+
+  return (
+    <ErrorBoundary>
+      {renderContent()}
+    </ErrorBoundary>
   );
 };
 
-export default ConfigurationManager;
-export { PaytableConfig };
-export { PaylineConfiguration };
+// Update the exports to ensure correct module linking
+const ConfigManager = ConfigurationManager;
+export default ConfigManager;
+export { PaytableConfig, PaylineConfiguration };

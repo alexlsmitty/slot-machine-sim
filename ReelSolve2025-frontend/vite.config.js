@@ -15,6 +15,10 @@ export default defineConfig({
       '@models': path.resolve(__dirname, './src/models'),
       '@assets': path.resolve(__dirname, './src/assets'),
       '@utils': path.resolve(__dirname, './src/utils'),
+      '@Navigation': path.resolve(__dirname, './src/components/Navigation'),
+      '@Shared': path.resolve(__dirname, './src/components/Shared'),
+      '@Flask': path.resolve(__dirname, './src/components/Flask'),
+      '@hooks': path.resolve(__dirname, './src/hooks'),
     }
   },
   build: {

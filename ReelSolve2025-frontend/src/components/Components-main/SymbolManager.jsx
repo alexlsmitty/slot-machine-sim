@@ -7,7 +7,7 @@ import {
 } from '@mui/material';
 import { Delete, Edit, Add, ColorLens } from '@mui/icons-material';
 import { useSymbolLibrary } from '@contexts/GameContexts';
-import SectionHeader from '../Navigation/sectionHeader';
+import SectionHeader from '@Navigation/sectionHeader';
 
 const SymbolManager = () => {
   const { symbols, setSymbols } = useSymbolLibrary();
