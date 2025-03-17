@@ -213,7 +213,7 @@ const defaultReelConfig = {
 
 const [reelConfig, setReelConfig] = useState({
     selectionMethod: 'percentage',
-    reels: defaultReelConfig?.reels || [
+    reels: initialReelConfig?.reels || [
       // Reel 1
       { 
         id: 1, 
@@ -426,6 +426,7 @@ export const useGameState = () => {
     ...useSymbolLibrary(),
     ...useVideoPoker(),
     ...usePayTable(),
+    ...useReelMatrix(),
   };
 };
 
