@@ -297,7 +297,11 @@ contextBridge.exposeInMainWorld('api', {
     } catch (error) {
       return { success: false, error: error.message };
     }
-  }
+  },
+
+  // New Flask API methods
+  flaskApiRequest: (options) => ipcRenderer.invoke('flask-api-request', options),
+  flaskApiTest: () => ipcRenderer.invoke('flask-api-test')
 });
 
 // Add these IPC handlers to your existing ones
