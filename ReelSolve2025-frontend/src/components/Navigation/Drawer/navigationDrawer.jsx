@@ -9,6 +9,8 @@ import {
   ListItemButton,
   ListItemIcon,
   ListItemText,
+  useTheme,   // Add this import
+  useMediaQuery // Add this import
 } from '@mui/material';
 import {
   ChevronLeft as ChevronLeftIcon,
@@ -26,27 +28,31 @@ const NavigationDrawer = ({
   onDrawerClose,
   gameType = 'slots' // default game type
 }) => {
+  // Add theme and responsive breakpoint
+  const theme = useTheme();
+  const isSmallScreen = useMediaQuery(theme.breakpoints.down('md'));
+  
   const navItems = navigationConfig[gameType] || [];
   
   return (
     <>
       <Drawer
-            sx={{
-              width: drawerWidth,
-              flexShrink: 0,
-              '& .MuiDrawer-paper': {
-                width: drawerWidth,
-                boxSizing: 'border-box',
-                // Use absolute positioning instead of pushing content
-                position: 'absolute',
-                zIndex: theme.zIndex.drawer,
-              },
-            }}
-            variant={isSmallScreen ? "temporary" : "persistent"}
-            anchor="left"
-            open={open}
-            onClose={onDrawerClose}
-          >
+        sx={{
+          width: drawerWidth,
+          flexShrink: 0,
+          '& .MuiDrawer-paper': {
+            width: drawerWidth,
+            boxSizing: 'border-box',
+            // Use absolute positioning instead of pushing content
+            position: 'absolute',
+            zIndex: theme.zIndex.drawer,
+          },
+        }}
+        variant={isSmallScreen ? "temporary" : "persistent"}
+        anchor="left"
+        open={open}
+        onClose={onDrawerClose}
+      >
         <Box
           sx={{
             display: 'flex',
