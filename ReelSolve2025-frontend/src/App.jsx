@@ -157,7 +157,29 @@ function App() {
         />
         <Box 
           component="main" 
-          sx={{ flexGrow: 1, p: 3, ml: isSmallScreen ? 0 : `${drawerWidth}px`, width: isSmallScreen ? '100%' : `calc(100% - ${drawerWidth}px)`, bgcolor: 'var(--background-primary)', minHeight: '100vh' }}
+          sx={{ 
+            flexGrow: 1, 
+            p: 3, 
+            // Remove the margin-left completely
+            ml: 0,
+            // Always use 100% width regardless of screen size
+            width: '100%', 
+            bgcolor: 'var(--background-primary)', 
+            minHeight: '100vh',
+            // Add transition for smooth drawer opening/closing
+            transition: theme.transitions.create(['margin', 'width'], {
+              easing: theme.transitions.easing.sharp,
+              duration: theme.transitions.duration.leavingScreen,
+            }),
+            // Only add padding when drawer is open on larger screens
+            ...(drawerOpen && !isSmallScreen && {
+              pl: `${drawerWidth + 24}px`, // 24px is the original padding (p: 3)
+              transition: theme.transitions.create(['margin', 'width'], {
+                easing: theme.transitions.easing.easeOut,
+                duration: theme.transitions.duration.enteringScreen,
+              }),
+            }),
+          }}
         >
           <Toolbar />
           <Box sx={{ borderRadius: 2, overflow: 'hidden', boxShadow: 'var(--shadow-soft)', mb: 4 }}>

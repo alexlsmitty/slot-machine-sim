@@ -31,19 +31,22 @@ const NavigationDrawer = ({
   return (
     <>
       <Drawer
-        sx={{
-          width: drawerWidth,
-          flexShrink: 0,
-          '& .MuiDrawer-paper': {
-            width: drawerWidth,
-            boxSizing: 'border-box',
-            background: 'var(--background-secondary)',
-          },
-        }}
-        variant="persistent"
-        anchor="left"
-        open={open}
-      >
+            sx={{
+              width: drawerWidth,
+              flexShrink: 0,
+              '& .MuiDrawer-paper': {
+                width: drawerWidth,
+                boxSizing: 'border-box',
+                // Use absolute positioning instead of pushing content
+                position: 'absolute',
+                zIndex: theme.zIndex.drawer,
+              },
+            }}
+            variant={isSmallScreen ? "temporary" : "persistent"}
+            anchor="left"
+            open={open}
+            onClose={onDrawerClose}
+          >
         <Box
           sx={{
             display: 'flex',
